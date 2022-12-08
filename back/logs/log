@@ -47,3 +47,15 @@ INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:24:20] "POST /search/111%20d
 INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:25:39] "[33mPOST /search HTTP/1.1[0m" 404 -
 INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:26:23] "GET / HTTP/1.1" 200 -
 INFO _internal.py:225  * Detected change in 'D:\\Project\\github\\vis_repo\\back\\app.py', reloading
+WARNING _internal.py:225  * Debugger is active!
+INFO _internal.py:225  * Debugger PIN: 127-801-972
+INFO _internal.py:225  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:27:02] "GET / HTTP/1.1" 200 -
+INFO app.py:20 query: *sfsd*
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:32:30] "POST /search/sfsd HTTP/1.1" 200 -
+INFO app.py:20 query: *11v  fdfeg  *nfjsdnf.*
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:32:50] "POST /search/11v%20%20fdfeg%20%20*nfjsdnf. HTTP/1.1" 200 -
+INFO app.py:20 query: *ddsd  fefe f*
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:35:11] "POST /search/ddsd%20%20fefe%20f HTTP/1.1" 200 -
+INFO app.py:20 query: *sas d*
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:36:46] "POST /search/sas%20d HTTP/1.1" 200 -
