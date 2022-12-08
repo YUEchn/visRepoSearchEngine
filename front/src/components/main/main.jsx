@@ -17,21 +17,9 @@ const Main = () => {
 
     const searchRepo = (value, event) =>{
         if(value !== query){
-            testConnect().then((res) => console.log(res))
-            // getResult(value)
+            getResult(value)
         }
         setQuery(value)   // 保存最新一次查询的值
-    }
-
-    const bt = () =>{
-        
-        // axios.post("http://localhost:3008/getResult").then((res) =>{
-        //     console.log(res, res.data);
-        // })
-
-        // testConnect()
-        getResult()
-
     }
 
 
@@ -42,8 +30,7 @@ const Main = () => {
             </div>
             <div id="search-container">
                 <div id="search-interface">
-                {/* <Search placeholder="input search text" enterButton="Search" size="large" onSearch={ searchRepo } /> */}
-                <button onClick={bt}></button>
+                <Search placeholder="input search text" enterButton="Search" size="large" onSearch={ searchRepo } />
                 </div>
                
             </div>

@@ -1,8 +1,8 @@
 import {get, post} from "./http.js"
 
-export const getResult = () => {
+export const getResult = (query) => {
     return post("/getResult", {
-        // query: query
+        query: query
     })
 }
 

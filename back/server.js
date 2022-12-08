@@ -39,5 +39,5 @@ app.listen(port, () => {
 app.post("/getResult", (req, res) => {
   res.send({b: "Hellosss "})
   res.end();
-    console.log(req.body)
+  console.log(req.body)
 })
