@@ -20,14 +20,11 @@ axios.interceptors.request.use(
  * 使用promise构造get请求
  */
 
-export function get(url, params) {
+export function get(url) {
   return new Promise((resolve, reject) => {
-    axios.get(url, {
-      params: params
-    })
+    axios.get(url)
       .then(res => {
         resolve(res.data);
-        console.log(res.data);
       })
       .catch(err => {
         reject(err.data);
@@ -38,12 +35,11 @@ export function get(url, params) {
 /**
  * 使用promise构造post请求
  */
-export function post(url, params) {
+export function post(url) {
   return new Promise((resolve, reject) => {
-    axios.post(url, params)
+    axios.post(url)
       .then(res => {
         resolve(res.data);
-        console.log(res.data);
       })
       .catch(err => {
         reject(err.data);

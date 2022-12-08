@@ -17,7 +17,7 @@ const Main = () => {
 
     const searchRepo = (value, event) =>{
         if(value !== query){
-            getResult(value)
+            getResult(value).then((res) => console.log(res));
         }
         setQuery(value)   // 保存最新一次查询的值
     }

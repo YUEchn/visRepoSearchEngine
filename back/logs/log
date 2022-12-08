@@ -1,0 +1,49 @@
+WARNING _internal.py:225  * Debugger is active!
+INFO _internal.py:225  * Debugger PIN: 127-801-972
+INFO _internal.py:225  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+INFO _internal.py:225  * Detected change in 'D:\\Project\\github\\vis_repo\\back\\app.py', reloading
+WARNING _internal.py:225  * Debugger is active!
+INFO _internal.py:225  * Debugger PIN: 127-801-972
+INFO _internal.py:225  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+INFO _internal.py:225  * Detected change in 'D:\\Project\\github\\vis_repo\\back\\app.py', reloading
+WARNING _internal.py:225  * Debugger is active!
+INFO _internal.py:225  * Debugger PIN: 127-801-972
+INFO _internal.py:225  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+INFO _internal.py:225  * Detected change in 'D:\\Project\\github\\vis_repo\\back\\app.py', reloading
+WARNING _internal.py:225  * Debugger is active!
+INFO _internal.py:225  * Debugger PIN: 127-801-972
+INFO _internal.py:225  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+INFO _internal.py:225  * Detected change in 'D:\\Project\\github\\vis_repo\\back\\app.py', reloading
+WARNING _internal.py:225  * Debugger is active!
+INFO _internal.py:225  * Debugger PIN: 127-801-972
+INFO _internal.py:225  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:17:22] "[33mPOST /getResult HTTP/1.1[0m" 404 -
+INFO _internal.py:225  * Detected change in 'D:\\Project\\github\\vis_repo\\back\\app.py', reloading
+WARNING _internal.py:225  * Debugger is active!
+INFO _internal.py:225  * Debugger PIN: 127-801-972
+INFO _internal.py:225  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:20:14] "[33mPOST /getResult HTTP/1.1[0m" 404 -
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:21:28] "[33mGET /getResult HTTP/1.1[0m" 404 -
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:21:43] "[33mPOST /getResult HTTP/1.1[0m" 404 -
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:21:55] "[33mPOST /getResult HTTP/1.1[0m" 404 -
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:22:42] "GET / HTTP/1.1" 200 -
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:22:48] "GET / HTTP/1.1" 200 -
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:22:52] "[31m[1mPOST / HTTP/1.1[0m" 405 -
+INFO _internal.py:225  * Detected change in 'D:\\Project\\github\\vis_repo\\back\\app.py', reloading
+WARNING _internal.py:225  * Debugger is active!
+INFO _internal.py:225  * Debugger PIN: 127-801-972
+INFO _internal.py:225  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+INFO app.py:20 query: *111*
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:23:42] "[35m[1mPOST /search/111 HTTP/1.1[0m" 500 -
+INFO _internal.py:225  * Detected change in 'D:\\Project\\github\\vis_repo\\back\\app.py', reloading
+WARNING _internal.py:225  * Debugger is active!
+INFO _internal.py:225  * Debugger PIN: 127-801-972
+INFO _internal.py:225  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+INFO app.py:20 query: *111*
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:24:02] "POST /search/111 HTTP/1.1" 200 -
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:24:14] "[33mPOST /search/111/dsdsd HTTP/1.1[0m" 404 -
+INFO app.py:20 query: *111 dsdsd*
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:24:20] "POST /search/111%20dsdsd HTTP/1.1" 200 -
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:25:39] "[33mPOST /search HTTP/1.1[0m" 404 -
+INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:26:23] "GET / HTTP/1.1" 200 -
+INFO _internal.py:225  * Detected change in 'D:\\Project\\github\\vis_repo\\back\\app.py', reloading
