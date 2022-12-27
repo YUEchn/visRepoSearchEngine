@@ -3,10 +3,27 @@ from flask import Flask
 import logging
 from logging.handlers import RotatingFileHandler
 from flask_cors import CORS
+from elasticsearch import Elasticsearch
+from elasticsearch import helpers
+import preprocessing
+import clustering
+
 
 # 创建Flask实例
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+
+class SearchEngine:
+    def __init__(self):
+        self.index = "vis_repo_engine"
+        self.ip = "http://localhost:9200"
+        self.es = Elasticsearch(self.ip).options(ignore_status=400)
+
+    
+    def execute_search(self, query):
+        resp_repos = helpers.scan(self.es, query, index = self.index, scroll = "10m")
+        return resp_repos
 
 # 设置路由
 @app.route("/")
@@ -25,6 +42,8 @@ def search(query):
     # 记录结果
     # app.logger.info("result: \n")
     # app.logger.info(result)
+    es = SearchEngine()
+    es.execute_search(query)
 
 
 
@@ -39,10 +58,44 @@ def setup_log():
     logging.getLogger().addHandler(file_log_handler)
 
 
+def test_search():
+    query = {
+        "query":{
+            "bool":{
+                "should": [
+                    {
+                        "match":{
+                            "repoName": "vis"
+                        }
+                    },
+                    {
+                        "match":{
+                            "description": "vis"
+                        }
+                    },
+                    {
+                        "match":{
+                            "topics": "vis"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+
+
+    es = SearchEngine()
+    resp_repos = es.execute_search(query)
+    # clustering.kmeans(resp_repos)
+    clustering.fastclustring(resp_repos)
+
+
+
 if __name__ == "__main__":
     setup_log()
     # host默认127.0.0.1 端口默认5000
-    app.run(
-        port = 5001,
-        debug=True
-    )
+    # app.run(
+    #     port = 5001,
+    #     debug=True
+    # )
+    test_search()

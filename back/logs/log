@@ -59,3 +59,7 @@ INFO app.py:20 query: *ddsd  fefe f*
 INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:35:11] "POST /search/ddsd%20%20fefe%20f HTTP/1.1" 200 -
 INFO app.py:20 query: *sas d*
 INFO _internal.py:225 127.0.0.1 - - [08/Dec/2022 17:36:46] "POST /search/sas%20d HTTP/1.1" 200 -
+INFO _internal.py:225  * Restarting with stat
+WARNING _internal.py:225  * Debugger is active!
+INFO _internal.py:225  * Debugger PIN: 143-943-348
+INFO _internal.py:225  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
