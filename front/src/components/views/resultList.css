@@ -1,1 +1,8 @@
 
+:where(.css-dev-only-do-not-override-acm2ia).ant-list-vertical .ant-list-item .ant-list-item-meta{
+    margin: 0;
+}
+
+.tagSelected{
+    background-color: cornflowerblue;
+}

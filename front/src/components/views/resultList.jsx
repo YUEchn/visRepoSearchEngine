@@ -1,24 +1,19 @@
 import React from "react";
 import { useState } from "react";
-import { LikeOutlined, StarOutlined } from "@ant-design/icons";
-import { Typography, List, Space } from "antd";
+import { LikeOutlined, StarOutlined, EyeOutlined } from "@ant-design/icons";
+import { Typography, List, Space, Tag  } from "antd";
 import "./resultList.css";
+import { useEffect } from "react";
 const { Paragraph } = Typography;
 
 const ResultList = () => {
   const [rows, setRows] = useState(1);
   const [expandable, setExpandable] = useState(true);
-  const [key, setKey] = useState(0);
-  const [fold, setFold] = useState(true);
+  const [init, setInit] = useState(false)
+  const [listKey, setListKey] = useState({})
+  const [listFold, setListFold] = useState({})
   const [loading, setLoading] = useState(false);
-  const onExpand = (e) => {
-    console.log(e);
-    setFold(false);
-  };
-  const onCollapse = (e) => {
-    setFold(true);
-    setKey(key + 1);
-  };
+
   const hits = [
     {
       repoName: "iDataV",
@@ -266,25 +261,67 @@ const ResultList = () => {
       contributors: ["brentvatne", "waldyrious"],
     },
   ];
+  useEffect(() => {
+    setInit(true)
+  }, [])
+
+  useEffect(() => {
+    if(init){
+      for(let i=0; i<hits.length; i++){
+        let key = hits[i].repoName
+        let tempKey = {[key]: hits[i].repoName + '$' + i}
+        let tempFold = {[key]: true}
+        setListKey(p => ({...p, ...tempKey}))
+        setListFold(p => ({...p, ...tempFold}))
+      }
+    }
+  }, [init])
+
+  
+  const onExpand = (e) => {
+    let curRepo = e.target.parentNode.id.split('$')[0]
+    let tempFold = {[curRepo]: false}
+    setListFold(p => ({...p, ...tempFold}))
+  };
+  const onCollapse = (e) => {
+    let curRepo = e.target.parentNode.parentNode.id.split('$')[0]
+    let tempFold = {[curRepo]: true}
+    let tempKeyNumber = parseInt(e.target.parentNode.parentNode.id.split('$')[1]) + 1
+    let tempKey = {[curRepo]: [curRepo] + '$' + tempKeyNumber}
+    setListFold(p => ({...p, ...tempFold}))
+    setListKey(p => ({...p, ...tempKey}))
+  };
+  // 高亮相同的tag
+  const highlightTag = (e)=>{
+    let currTopic = e.target.innerText.replace(/\-|\_/g," ");
+    let elements = document.querySelectorAll(`${"span[value=" + currTopic + "]"}`);
+    for(let i of elements){
+      i.classList.add('tagSelected')
+    }
+  }
+
+  const highlightRemove = () => {
+    let elements = document.querySelectorAll("span[type=topicSpan]")
+    for(let i of elements){
+      i.classList.remove('tagSelected')
+    }
+  }
   const IconText = ({ icon, text }) => (
     <Space>
       {React.createElement(icon)}
       {text}
     </Space>
   );
-
-  const article =
-    "To be, or not to be, that is a question: Whether it is nobler in the mind to suffer. The slings and arrows of outrageous fortune Or to take arms against a sea of troubles, And by opposing end them? To die: to sleep; No more; and by a sleep to say we end The heart-ache and the thousand natural shocks That flesh is heir to, 'tis a consummation Devoutly to be wish'd. To die, to sleep To sleep- perchance to dream: ay, there's the rub! For in that sleep of death what dreams may come When we have shuffled off this mortal coil, Must give us pause. There 's the respect That makes calamity of so long life";
-  return (
+ return (
     <div style={{ width: "100%", height: "100%" }}>
-      <List
+      {init && <List
         itemLayout="vertical"
         size="small"
         dataSource={hits}
         pagination={{
           pageSize: 5,
         }}
-        renderItem={(item) => (
+        renderItem={(item, index) => (
           <List.Item
             key={item.repoName}
             actions={[
@@ -294,7 +331,7 @@ const ResultList = () => {
                 key="list-vertical-star-o"
               />,
               <IconText
-                icon={LikeOutlined}
+                icon={EyeOutlined}
                 text={item.watchersCount}
                 key="list-vertical-like-o"
               />,
@@ -303,18 +340,30 @@ const ResultList = () => {
             <List.Item.Meta
               title={<a href={item.htmlUrl}>{item.repoName}</a>}
             />
+            {item.topics.map((topic) => {
+              return(
+                <Tag
+                type= 'topicSpan'
+                value={topic.replace(/\-|\_/g," ").toLowerCase()}
+                 onMouseOver = {highlightTag}
+                 onMouseOut = {highlightRemove}
+                 >
+                  {topic}
+                 </Tag>
+              )
+            })}
             <Paragraph
-              key={item.repoName}
+              key= {listKey[item.repoName]}
+              id = {listKey[item.repoName]}
               ellipsis={{
                 rows,
-                symbol: "",
+                symbol: "v",
                 expandable,
-                expandable: true,
                 onExpand: onExpand,
               }}
             >
               {item.description}
-              {!fold && (
+              {!listFold[item.repoName] && (
                 <span className="value-collapse" onClick={onCollapse}>
                   <a> ^</a>
                 </span>
@@ -322,7 +371,7 @@ const ResultList = () => {
             </Paragraph>
           </List.Item>
         )}
-      />
+      />}
     </div>
   );
 };
