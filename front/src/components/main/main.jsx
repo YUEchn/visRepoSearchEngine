@@ -40,7 +40,9 @@ const Main = () => {
       </div>
       <div id="search-filter">过滤得选项</div>
       <div id="search-result">
+        <div id="list-container">
         <ResultList></ResultList>
+        </div>
       </div>
     </div>
   );
