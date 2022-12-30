@@ -74,8 +74,6 @@ def search(query):
         repo_id = hit['_source']['repoName']
         score = hit['_explanation']['value']
         content['score'] = score
-        content['highlight'] = {}
-        print(repo_id)
         content['highlight'] = hit['highlight']
         hash_val = hashlib.md5(repo_id.encode('utf-8')).digest()
         if hash_val not in exist_hash:
