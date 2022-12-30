@@ -30,7 +30,7 @@ class SearchEngine:
                             "fields": [
                                 "repoName",
                                 "topics",
-                                "deccription"
+                                "description"
                             ]
                             }
                         },
@@ -40,7 +40,7 @@ class SearchEngine:
                             "fields": {
                             "repoName": {},
                             "topics": {},
-                            "deccription": {}
+                            "description": {}
                             }
                         },
                         "explain": True
@@ -70,15 +70,17 @@ def search(query):
     exist_hash = []
     for hit in hits:
         # print('hit------------------------------', hit)
-        conent = hit['_source']
+        content = hit['_source']
         repo_id = hit['_source']['repoName']
         score = hit['_explanation']['value']
-        conent['score'] = score
-        conent['highlight'] = hit['highlight']
+        content['score'] = score
+        content['highlight'] = {}
+        print(repo_id)
+        content['highlight'] = hit['highlight']
         hash_val = hashlib.md5(repo_id.encode('utf-8')).digest()
         if hash_val not in exist_hash:
             exist_hash.append(hash_val)
-            respond.append(conent)
+            respond.append(content)
     
     # 根据score对数据进行排序，优先级：得分降序、名称升序
     respond_sorted = sorted(respond, key=lambda x: (-x['score'], x['repoName']))

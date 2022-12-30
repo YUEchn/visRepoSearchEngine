@@ -7,7 +7,7 @@ import "./resultList.css";
 import { useEffect } from "react";
 const { Paragraph } = Typography;
 
-const ResultList = ({ result, query }) => {
+const ResultList = ({ result, query, loading }) => {
   const repoList = result;
   const [rows, setRows] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -15,7 +15,7 @@ const ResultList = ({ result, query }) => {
   const [init, setInit] = useState(false);
   const [listKey, setListKey] = useState({});
   const [listFold, setListFold] = useState({});
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setInit(true);
@@ -85,6 +85,7 @@ const ResultList = ({ result, query }) => {
           <List
             itemLayout="vertical"
             size="small"
+            loading={loading}
             dataSource={repoList}
             pagination={{
               pageSize: pageSize,
@@ -110,38 +111,9 @@ const ResultList = ({ result, query }) => {
                 <List.Item.Meta
                   title={<a href={item.htmlUrl}>{item.highlight.hasOwnProperty("repoName")?parse(item.highlight.repoName[0]): item.repoName}</a>}
                 />
-                {item.topics.map((topic) => {
-                  if (!item.highlight.hasOwnProperty("topics")) {
-                    return (
-                      <Tag
-                        type="topicSpan"
-                        value={topic.replace(/\-|\_/g, " ").toLowerCase()}
-                        onMouseOver={highlightTag}
-                        onMouseOut={highlightRemove}
-                      >
-                        {topic}
-                      </Tag>
-                    );
-                  } else {
-                    let htemp = [];
-                    let temp = item.highlight.topics.map((t) => {
-                      let tt = t.replaceAll("<em>", "").replaceAll("</em>", "").toLowerCase()
-                      let ttt = t.replaceAll("<em>", "<b>").replaceAll("</em>", "</b>")
-                      htemp.push(ttt);
-                      return tt;
-                    });
-                    if (temp.includes(topic.toLowerCase() )) {
-                      return (
-                        <Tag
-                          type="topicSpan"
-                          value={topic.replace(/\-|\_/g, " ").toLowerCase()}
-                          onMouseOver={highlightTag}
-                          onMouseOut={highlightRemove}
-                        >
-                        {parse(htemp[temp.indexOf(topic.toLowerCase())])}
-                        </Tag>
-                      );
-                    } else {
+                {
+                  !item.highlight.hasOwnProperty("topics")?
+                    item.topics.map((topic) => {
                       return (
                         <Tag
                           type="topicSpan"
@@ -152,9 +124,43 @@ const ResultList = ({ result, query }) => {
                           {topic}
                         </Tag>
                       );
-                    }
-                  }
-                })}
+                    })
+                  : (() => {
+                    let htemp = [];
+                    let temp = item.highlight.topics.map((t) => {
+                      let tt = t.replaceAll("<em>", "").replaceAll("</em>", "").toLowerCase()
+                      let ttt = t.replaceAll("<em>", "<b>").replaceAll("</em>", "</b>")
+                      htemp.push(ttt);
+                      return tt;
+                    });
+                    let tags = item.topics.map((topic) => {
+                      if (temp.includes(topic.toLowerCase())) {
+                        return (
+                          <Tag
+                            type="topicSpan"
+                            value={topic.replace(/\-|\_/g, " ").toLowerCase()}
+                            onMouseOver={highlightTag}
+                            onMouseOut={highlightRemove}
+                          >
+                          {parse(htemp[temp.indexOf(topic.toLowerCase())])}
+                          </Tag>
+                        );
+                      } else {
+                        return (
+                          <Tag
+                            type="topicSpan"
+                            value={topic.replace(/\-|\_/g, " ").toLowerCase()}
+                            onMouseOver={highlightTag}
+                            onMouseOut={highlightRemove}
+                          >
+                            {topic}
+                          </Tag>
+                        );
+                      }
+                    })
+                    return tags
+                  })()
+                }
                 <Paragraph
                   key={listKey[item.repoName]}
                   id={listKey[item.repoName]}
