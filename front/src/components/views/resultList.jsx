@@ -15,11 +15,15 @@ const ResultList = ({ result, query, loading }) => {
   const [init, setInit] = useState(false);
   const [listKey, setListKey] = useState({});
   const [listFold, setListFold] = useState({});
-  // const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setInit(true);
   }, []);
+
+  useEffect(() => {
+    console.log('listFold', listFold);
+  }, [listFold]);
+
 
   useEffect(() => {
     if (init && repoList !== undefined) {

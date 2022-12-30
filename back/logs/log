@@ -835,3 +835,7 @@ INFO app.py:66 result:
 
 INFO _internal.py:225 127.0.0.1 - - [30/Dec/2022 19:01:46] "POST /search/js HTTP/1.1" 200 -
 INFO _internal.py:225  * Detected change in 'D:\\Project\\github\\vis_repo\\back\\app.py', reloading
+INFO _internal.py:225  * Restarting with stat
+WARNING _internal.py:225  * Debugger is active!
+INFO _internal.py:225  * Debugger PIN: 139-547-115
+INFO _internal.py:225  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)

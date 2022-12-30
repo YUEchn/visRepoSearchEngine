@@ -1,5 +1,6 @@
 #main-container{
     width: 100vw;
+    float: left;
 }
 
 #header{
@@ -31,7 +32,7 @@
 #search-filter{
     width: 100vw;
     height: 3vh;
-    background-color: aquamarine;
+    background-color: rgb(43, 50, 65);
 }
 
 :where(.css-dev-only-do-not-override-acm2ia).ant-btn-primary{
@@ -40,6 +41,7 @@
 #search-result{
     width: 100vw;
     height: 90vh;
+    float: left;
 }
 
 :root {
@@ -62,9 +64,20 @@
 
 #list-container{
     float: left;
-    width: 30vw;
+    width: 25vw;
     height: 90vh;
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
+    border: 1px solid #eeeeee;;
 }
 
+
+.flexlayout__layout{
+    top: 10vh !important;
+    /* left: 25vw !important; */
+}
+
+.flexlayout__tab{
+    overflow: hidden !important;
+}
