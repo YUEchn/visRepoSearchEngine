@@ -39,11 +39,11 @@
 }
 #search-result{
     width: 100vw;
-    height: 75vh;
+    height: 90vh;
 }
 
 :root {
-    overflow-y: auto;
+    overflow-y: hidden;
     overflow-x: hidden;
 }
 
@@ -63,7 +63,8 @@
 #list-container{
     float: left;
     width: 30vw;
-    height: auto;
-    background-color: antiquewhite;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
 }
 

@@ -8,15 +8,20 @@ const { Search } = Input;
 
 const Main = () => {
   const [query, setQuery] = useState("");
+  const [result, setResult] = useState([])
 
-  // useEffect(() => {
-  //     if(query !== ""){
-  //     }
-  // }, [query])
+  useEffect(() => {
+      if(result !== []){
+        console.log(result);
+      }
+  }, [result])
 
+  // 执行用户查询
   const searchRepo = (value, event) => {
-    if (value !== query) {
-      getResult(value).then((res) => console.log(res));
+    if (value !== query) {  // 与上一次执行不同的查询才会执行新的查询
+      getResult(value).then((res) => {
+        setResult(res.data)
+      });
     }
     setQuery(value); // 保存最新一次查询的值
   };
@@ -41,7 +46,7 @@ const Main = () => {
       <div id="search-filter">过滤得选项</div>
       <div id="search-result">
         <div id="list-container">
-        <ResultList></ResultList>
+        <ResultList result={result} query={query}></ResultList>
         </div>
       </div>
     </div>

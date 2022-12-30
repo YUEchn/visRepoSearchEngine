@@ -6,3 +6,37 @@
 .tagSelected{
     background-color: cornflowerblue;
 }
+
+:where(.css-dev-only-do-not-override-acm2ia).ant-list-vertical .ant-list-item .ant-list-item-action{
+    margin: 0;
+}
+
+.ant-list-item-meta-title{
+    margin: 0;
+}
+
+#repo-list-title{
+    width: 100%;
+    height: 3vh;
+    background-color: rgb(190, 189, 189);
+}
+
+#repo-list-title p{
+    margin: 0;
+    font-size: 1.5em;
+    line-height: 3vh;
+    font-weight: bold;
+    float: left;
+}
+#repo-list-title label{
+    font-size: 1em;
+    line-height: 3vh;
+    padding-bottom: 0;
+    float: right;
+}
+#repo-list-content{
+    width: 100%;
+    height: 87vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
