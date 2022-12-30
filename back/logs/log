@@ -696,3 +696,23 @@ INFO app.py:66 result:
 
 INFO _internal.py:225 127.0.0.1 - - [30/Dec/2022 17:19:26] "[35m[1mPOST /search/as HTTP/1.1[0m" 500 -
 INFO _internal.py:225  * Detected change in 'D:\\Project\\github\\vis_repo\\back\\app.py', reloading
+INFO _internal.py:225  * Restarting with stat
+WARNING _internal.py:225  * Debugger is active!
+INFO _internal.py:225  * Debugger PIN: 139-547-115
+INFO _internal.py:225  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+INFO app.py:64 query: *as*
+INFO app.py:66 result: 
+
+INFO _internal.py:225 127.0.0.1 - - [30/Dec/2022 17:20:04] "POST /search/as HTTP/1.1" 200 -
+INFO app.py:64 query: *as*
+INFO app.py:66 result: 
+
+INFO _internal.py:225 127.0.0.1 - - [30/Dec/2022 17:27:37] "POST /search/as HTTP/1.1" 200 -
+INFO app.py:64 query: *as*
+INFO app.py:66 result: 
+
+INFO _internal.py:225 127.0.0.1 - - [30/Dec/2022 18:11:58] "POST /search/as HTTP/1.1" 200 -
+INFO app.py:64 query: *as*
+INFO app.py:66 result: 
+
+INFO _internal.py:225 127.0.0.1 - - [30/Dec/2022 18:13:09] "POST /search/as HTTP/1.1" 200 -
