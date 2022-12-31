@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
+import re
 from flask import Flask
 from flask_cors import CORS
 import logging
 from logging.handlers import RotatingFileHandler
 import hashlib
-from elasticsearch import Elasticsearch
+# from elasticsearch import Elasticsearch
 from elasticsearch import helpers
+from functools import partial
+import nltk
+from nltk.stem.porter import PorterStemmer
 import preprocessing
 import clustering
 
@@ -15,6 +19,7 @@ app = Flask(__name__)
 app.jinja_env.auto_reload = True
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+porter_stemmer = PorterStemmer()
 
 class SearchEngine:
     def __init__(self):
@@ -57,12 +62,41 @@ def hello_world():
     return "Hello Python World"
 
 
-# 计算字符串的匹配模式
-def calMatchPattern():
+# 计算字符串的匹配模式，es只会匹配原始的和大小写
+def calMatchOrder(single_match, query_arr):
+    search_results = re.finditer(r'\<em>.*?\</em>', single_match) 
+    match_index = []
+    for item in search_results: 
+        curItem = porter_stemmer.stem(item.group(0).replace('<em>', '').replace('</em>', '').strip().lower())
+        try:
+            curIndex = query_arr.indexOf(curItem)
+            match_index.append(curIndex)
+        except Exception as e:
+            print(str(e)) 
 
-    pass
+    return match_index
+
+def calMatchPattern(explains, highlight, query_arr):
+    # 第一步：找到评分最大的一组所对应的索引
+    max_score = explains['value']
+    for index, item in enumerate(explains):
+        if item['vallue'] == max_score:
+            max_score_index = index   
+            break
+    # 第二步：找到最大评分对应的field并计算匹配模式
+    match_pattern = []
+    for index, item in enumerate(highlight):
+        if index == max_score_index:
+            match_pattern += list(map(partial(calMatchOrder, query_arr = query_arr), highlight[item]))
+    
+
+
 
 # 执行查询过程
+'''
+match_pattern: [[0], [0, 3, 3], [0, 1, 3], [0, 4], [0]]
+
+'''
 @app.route("/search/<query>", methods=['POST', 'GET'])
 def search(query):
     # 记录日志
@@ -73,7 +107,8 @@ def search(query):
     hits = es.execute_search(query)
     respond = []
     exist_hash = []
-    query_arr = query.strip().split(',')  # 将输入的文本转为数组
+    # 对输入的语句进行词干化
+    query_arr = list(map(lambda x: porter_stemmer.stem(x), query.strip().lower().split(' '))) # 将输入的文本转为数组
     for hit in hits:
         # print('hit------------------------------', hit)
         content = hit['_source']
@@ -85,8 +120,12 @@ def search(query):
         if hash_val not in exist_hash:
             exist_hash.append(hash_val)
             respond.append(content)
-            # for hl in hit['highlihgt']:
-                
+            calMatchPattern(hit['_explanation'].details, hit['highlight'], query_arr)
+            match_pattern = []
+
+            # 单独计算所有的匹配方式，不选择最靠近的
+            # for key, value in hit['highlihgt'].items():
+            #     match_pattern += list(map(partial(calMatchOrder, query_arr = query_arr), value))
     
     # 根据score对数据进行排序，优先级：得分降序、名称升序
     respond_sorted = sorted(respond, key=lambda x: (-x['score'], x['repoName']))
