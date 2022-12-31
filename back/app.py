@@ -85,7 +85,7 @@ def search(query):
         if hash_val not in exist_hash:
             exist_hash.append(hash_val)
             respond.append(content)
-            for hl in hit['highlihgt']:
+            # for hl in hit['highlihgt']:
                 
     
     # 根据score对数据进行排序，优先级：得分降序、名称升序
