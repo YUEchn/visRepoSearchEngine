@@ -85,12 +85,18 @@ def calMatchPattern(explains, highlight, query_arr):
             break
     # 第二步：找到最大评分对应的field并计算匹配模式
     match_pattern = []
-    for index, item in enumerate(highlight):
+    match_field = ''
+    for index, field in enumerate(highlight):
         if index == max_score_index:
-            match_pattern += list(map(partial(calMatchOrder, query_arr = query_arr), highlight[item]))
-    
+            match_field = field
+            match_pattern += list(map(partial(calMatchOrder, query_arr = query_arr), highlight[field]))
+    if len(match_pattern) == 1:   # 匹配的最高的只有一项
+        pass
 
+    else:
+        pass
 
+    return match_pattern
 
 # 执行查询过程
 '''
@@ -110,7 +116,6 @@ def search(query):
     # 对输入的语句进行词干化
     query_arr = list(map(lambda x: porter_stemmer.stem(x), query.strip().lower().split(' '))) # 将输入的文本转为数组
     for hit in hits:
-        # print('hit------------------------------', hit)
         content = hit['_source']
         repo_id = hit['_source']['repoName']
         score = hit['_explanation']['value']
@@ -120,13 +125,9 @@ def search(query):
         if hash_val not in exist_hash:
             exist_hash.append(hash_val)
             respond.append(content)
-            calMatchPattern(hit['_explanation'].details, hit['highlight'], query_arr)
-            match_pattern = []
+            match_pattern = calMatchPattern(hit['_explanation'].details, hit['highlight'], query_arr)
 
-            # 单独计算所有的匹配方式，不选择最靠近的
-            # for key, value in hit['highlihgt'].items():
-            #     match_pattern += list(map(partial(calMatchOrder, query_arr = query_arr), value))
-    
+
     # 根据score对数据进行排序，优先级：得分降序、名称升序
     respond_sorted = sorted(respond, key=lambda x: (-x['score'], x['repoName']))
     # app.logger.info(respond)
