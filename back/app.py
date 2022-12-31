@@ -49,13 +49,18 @@ class SearchEngine:
             self.es, queryPattern, index=self.index, scroll="10m")
         return resp_repos
 
+
+
 # 设置路由
-
-
 @app.route("/")
 def hello_world():
     return "Hello Python World"
 
+
+# 计算字符串的匹配模式
+def calMatchPattern():
+
+    pass
 
 # 执行查询过程
 @app.route("/search/<query>", methods=['POST', 'GET'])
@@ -68,6 +73,7 @@ def search(query):
     hits = es.execute_search(query)
     respond = []
     exist_hash = []
+    query_arr = query.strip().split(',')  # 将输入的文本转为数组
     for hit in hits:
         # print('hit------------------------------', hit)
         content = hit['_source']
@@ -79,6 +85,8 @@ def search(query):
         if hash_val not in exist_hash:
             exist_hash.append(hash_val)
             respond.append(content)
+            for hl in hit['highlihgt']:
+                
     
     # 根据score对数据进行排序，优先级：得分降序、名称升序
     respond_sorted = sorted(respond, key=lambda x: (-x['score'], x['repoName']))
