@@ -5,10 +5,11 @@ from flask_cors import CORS
 import logging
 from logging.handlers import RotatingFileHandler
 import hashlib
-# from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch
 from elasticsearch import helpers
 from functools import partial
 import nltk
+import json
 from nltk.stem.porter import PorterStemmer
 import preprocessing
 import clustering
@@ -21,6 +22,7 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 porter_stemmer = PorterStemmer()
 
+
 class SearchEngine:
     def __init__(self):
         self.index = "vis_repo_engine"
@@ -29,31 +31,29 @@ class SearchEngine:
 
     def execute_search(self, query):
         queryPattern = {
-                        "query": {
-                            "multi_match": {
-                            "query": query,
-                            "fields": [
-                                "repoName",
-                                "topics",
-                                "description"
-                            ]
-                            }
-                        },
-                        "highlight": {
-                            "pre_tags": "<em>",
-                            "post_tags": "</em>", 
+            "query": {
+                "multi_match": {
+                    "query": query,
+                    "fields": [
+                        "repoName",
+                        "topics",
+                        "description"
+                    ]
+                }
+            },
+            "highlight": {
+                "pre_tags": "<em>",
+                            "post_tags": "</em>",
                             "fields": {
-                            "repoName": {},
-                            "topics": {},
-                            "description": {}
+                                "repoName": {},
+                                "topics": {},
+                                "description": {}
                             }
-                        },
-                        "explain": True
-                        }
-        resp_repos = helpers.scan(
-            self.es, queryPattern, index=self.index, scroll="10m")
+            },
+            "explain": True
+        }
+        resp_repos = helpers.scan(self.es, queryPattern, index=self.index, scroll="10m")    # 执行大规模查询
         return resp_repos
-
 
 
 # 设置路由
@@ -64,39 +64,49 @@ def hello_world():
 
 # 计算字符串的匹配模式，es只会匹配原始的和大小写
 def calMatchOrder(single_match, query_arr):
-    search_results = re.finditer(r'\<em>.*?\</em>', single_match) 
+    search_results = re.finditer(r'\<em>.*?\</em>', single_match)
     match_index = []
-    for item in search_results: 
-        curItem = porter_stemmer.stem(item.group(0).replace('<em>', '').replace('</em>', '').strip().lower())
+    for item in search_results:
+        # # 词干化
+        # curItem = porter_stemmer.stem(item.group(0).replace('<em>', '').replace('</em>', '').strip().lower())
+        # 不进行词干化
+        curItem = item.group(0).replace('<em>', '').replace('</em>', '').strip().lower()
         try:
-            curIndex = query_arr.indexOf(curItem)
+            curIndex = query_arr.index(curItem)
             match_index.append(curIndex)
         except Exception as e:
-            print(str(e)) 
-
+            print(str(e), query_arr)
+    if len(list(set(match_index))) == 1:   # [2, 2, 2] ---> [2]
+        return [match_index[0]]
     return match_index
 
+
 def calMatchPattern(explains, highlight, query_arr):
-    # 第一步：找到评分最大的一组所对应的索引
-    max_score = explains['value']
-    for index, item in enumerate(explains):
-        if item['vallue'] == max_score:
-            max_score_index = index   
-            break
+    # 第一步：找最大score对应的field
+    # match_field = ''
+    explains_sorted = sorted(explains['details'], key=lambda x: (-x['value'], re.findall(r"weight[(](.+?):", x['details'][0]['description'])[0]))  # 对explains根据score进行排序
+    if len(explains_sorted) == 1:
+        if re.findall(r"weight[(](.+?):", explains_sorted[0]['details'][0]['description'])[0] != 'topics':   # 最大score对应的field不是topics
+            match_field = re.findall(r"weight[(](.+?):", explains_sorted[0]['details'][0]['description'])[0]
+        else:
+            return [[]], 'topics'
+    elif re.findall(r"weight[(](.+?):", explains_sorted[0]['details'][0]['description'])[0] == 'topics':   # 最大score对应的field不是topics
+            match_field = re.findall(r"weight[(](.+?):", explains_sorted[1]['details'][0]['description'])[0]
+    else:
+        match_field = re.findall(r"weight[(](.+?):", explains_sorted[0]['details'][0]['description'])[0]
+
+
+
+
     # 第二步：找到最大评分对应的field并计算匹配模式
     match_pattern = []
-    match_field = ''
-    for index, field in enumerate(highlight):
-        if index == max_score_index:
-            match_field = field
-            match_pattern += list(map(partial(calMatchOrder, query_arr = query_arr), highlight[field]))
-    if len(match_pattern) == 1:   # 匹配的最高的只有一项
-        pass
+    match_pattern += list(map(partial(calMatchOrder, query_arr=query_arr), highlight[match_field]))
+    
+    if len(list(set([tuple(t) for t in match_pattern]))) == 1:    
+        return [match_pattern[0]], match_field      # [[2, 1], [2, 1]] ---> [2, 1]
+    return match_pattern, match_field
 
-    else:
-        pass
 
-    return match_pattern
 
 # 执行查询过程
 '''
@@ -113,8 +123,12 @@ def search(query):
     hits = es.execute_search(query)
     respond = []
     exist_hash = []
-    # 对输入的语句进行词干化
-    query_arr = list(map(lambda x: porter_stemmer.stem(x), query.strip().lower().split(' '))) # 将输入的文本转为数组
+    # # 对输入的语句进行词干化
+    # query_arr = list(map(lambda x: porter_stemmer.stem(
+    #     x), query.strip().lower().split(' ')))  # 将输入的文本转为数组
+    # 不进行词干化
+    query_arr = list(map(lambda x: x, query.strip().lower().split(' ')))  # 将输入的文本转为数组
+
     for hit in hits:
         content = hit['_source']
         repo_id = hit['_source']['repoName']
@@ -125,13 +139,14 @@ def search(query):
         if hash_val not in exist_hash:
             exist_hash.append(hash_val)
             respond.append(content)
-            match_pattern = calMatchPattern(hit['_explanation'].details, hit['highlight'], query_arr)
-
+            match_pattern = calMatchPattern(hit['_explanation'], hit['highlight'], query_arr)
 
     # 根据score对数据进行排序，优先级：得分降序、名称升序
-    respond_sorted = sorted(respond, key=lambda x: (-x['score'], x['repoName']))
+    respond_sorted = sorted(
+        respond, key=lambda x: (-x['score'], x['repoName']))
     # app.logger.info(respond)
     return {"data": respond_sorted}
+
 
 def setup_log():
     # 创建日志记录器，指明日志保存的路径、每个日志文件的最大大小、保存的日志文件个数上限
@@ -147,41 +162,78 @@ def setup_log():
 
 
 def test_search():
-    query = {
+    query = 'data visualization for graph'
+    queryPattern = {
         "query": {
-            "bool": {
-                "should": [
-                    {
-                        "match": {
-                            "repoName": "vis"
-                        }
-                    },
-                    {
-                        "match": {
-                            "description": "vis"
-                        }
-                    },
-                    {
-                        "match": {
-                            "topics": "vis"
-                        }
-                    }
+            "multi_match": {
+                "query": query,
+                "fields": [
+                    "repoName",
+                    "topics",
+                    "description"
                 ]
             }
-        }
+        },
+        "highlight": {
+            "pre_tags": "<em>",
+            "post_tags": "</em>",
+            "fields": {
+                "repoName": {},
+                "topics": {},
+                "description": {}
+            }
+        },
+        "explain": True
     }
 
     es = SearchEngine()
-    resp_repos = es.execute_search(query)
+    hits = es.execute_search(query)   
+
     # clustering.kmeans(resp_repos)
-    clustering.fastclustring(resp_repos)
+    # clustering.fastclustring(resp_repos)
+    respond = []
+    exist_hash = []
+    match_pattern = []
+    # # 对输入的语句进行词干化
+    # query_arr = list(map(lambda x: porter_stemmer.stem(
+    #     x), query.strip().lower().split(' ')))  # 将输入的文本转为数组
+    # 不进行词干化
+    query_arr = list(map(lambda x: x, query.strip().lower().split(' ')))  # 将输入的文本转为数组
+
+    count = 0
+    res = {}
+    for hit in hits:
+        count += 1
+        content = hit['_source']
+        repo_id = hit['_source']['repoName']
+        score = hit['_explanation']['value']
+        content['score'] = score
+        content['highlight'] = hit['highlight']
+        hash_val = hashlib.md5(repo_id.encode('utf-8')).digest()
+        if hash_val not in exist_hash:
+            exist_hash.append(hash_val)
+            respond.append(content)
+            temp_match_pattern, match_field = calMatchPattern(hit['_explanation'], hit['highlight'], query_arr)
+            match_pattern.append(tuple(sum(temp_match_pattern, [])))
+            res[str(count) + '_' + match_field] = tuple(temp_match_pattern)
+    print(count)
+    print(len(set(match_pattern)))
+
+    # f = open('./data/match4.json', 'w', encoding='utf8')
+    # f.write(json.dumps(res))
+    # f.close()
+    f1 = open('./data/match_pattern.txt', 'w', encoding='utf8')
+    f1.write(str(match_pattern))
+    f1.close()
+    
 
 
 if __name__ == "__main__":
-    setup_log()
-    app.run(
-        port=5001,   # host默认127.0.0.1 端口默认5001
-        debug=True
-    )
+    # setup_log()
+    # app.run(
+    #     port=5001,   # host默认127.0.0.1 端口默认5001
+    #     debug=True
+    # )
+
     # 测试es连接
-#     test_search()
+    test_search()
