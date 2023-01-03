@@ -76,9 +76,34 @@ def calMatchOrder(single_match, query_arr):
             match_index.append(curIndex)
         except Exception as e:
             print(str(e), query_arr)
-    if len(list(set(match_index))) == 1:   # [2, 2, 2] ---> [2]
+    if len(list(set(match_index))) == 1:   # 1. [2, 2, 2] ---> [2]
         return [match_index[0]]
     return match_index
+
+
+# 找到匹配模式序列中的重复子序列作为最终的匹配序列
+def repeatedSubstringPattern(s):
+        def kmp(query, pattern):
+            n, m = len(query), len(pattern)
+            fail = [-1] * m
+            
+            for i in range(1, m):
+                j = fail[i - 1]
+                while j != -1 and pattern[j + 1] != pattern[i]:
+                    j = fail[j]
+                if pattern[j + 1] == pattern[i]:
+                    fail[i] = j + 1
+            match = -1
+            for i in range(1, n - 1):
+                while match != -1 and pattern[match + 1] != query[i]:
+                    match = fail[match]
+                if pattern[match + 1] == query[i]:
+                    match += 1
+                    if match == m - 1:
+                        return [int (x) for x in pattern[fail[-1]+1:].split('_')[1:]]
+            return [int(x) for x in pattern.split('_')[1:]]
+        return kmp(s + s, s)
+    
 
 
 def calMatchPattern(explains, highlight, query_arr):
@@ -89,7 +114,7 @@ def calMatchPattern(explains, highlight, query_arr):
         if re.findall(r"weight[(](.+?):", explains_sorted[0]['details'][0]['description'])[0] != 'topics':   # 最大score对应的field不是topics
             match_field = re.findall(r"weight[(](.+?):", explains_sorted[0]['details'][0]['description'])[0]
         else:
-            return [[]], 'topics'
+            return [], 'topics'
     elif re.findall(r"weight[(](.+?):", explains_sorted[0]['details'][0]['description'])[0] == 'topics':   # 最大score对应的field不是topics
             match_field = re.findall(r"weight[(](.+?):", explains_sorted[1]['details'][0]['description'])[0]
     else:
@@ -99,12 +124,19 @@ def calMatchPattern(explains, highlight, query_arr):
 
 
     # 第二步：找到最大评分对应的field并计算匹配模式
-    match_pattern = []
-    match_pattern += list(map(partial(calMatchOrder, query_arr=query_arr), highlight[match_field]))
-    
-    if len(list(set([tuple(t) for t in match_pattern]))) == 1:    
-        return [match_pattern[0]], match_field      # [[2, 1], [2, 1]] ---> [2, 1]
-    return match_pattern, match_field
+    match_pattern = []   # 多维数组
+    match_pattern_one_dim = []  # 一维数组
+    match_pattern += list(map(partial(calMatchOrder, query_arr=query_arr), highlight[match_field]))  # [[...], [...], [...]]
+
+    # if len(list(set([tuple(t) for t in match_pattern]))) == 1:  # 2. [[2, 1], [2, 1]] ---> [2, 1]
+    #     match_pattern_one_dim = match_pattern[0]
+    # else:
+    #     match_pattern_one_dim = sum(match_pattern, [])  
+
+    match_pattern_one_dim = sum(match_pattern, [])  # 2. [[2, 1], [2, 1]] ---> [2, 1, 2, 1]
+    match_pattern_last = repeatedSubstringPattern('_' + '_'.join(str(i) for i in match_pattern_one_dim)) # [2,1,0,2,1,0] ---> [2,1,0]
+
+    return match_pattern_last, match_field
 
 
 
@@ -194,6 +226,7 @@ def test_search():
     respond = []
     exist_hash = []
     match_pattern = []
+    match_pattern_obj = {}
     # # 对输入的语句进行词干化
     # query_arr = list(map(lambda x: porter_stemmer.stem(
     #     x), query.strip().lower().split(' ')))  # 将输入的文本转为数组
@@ -214,17 +247,21 @@ def test_search():
             exist_hash.append(hash_val)
             respond.append(content)
             temp_match_pattern, match_field = calMatchPattern(hit['_explanation'], hit['highlight'], query_arr)
-            match_pattern.append(tuple(sum(temp_match_pattern, [])))
-            res[str(count) + '_' + match_field] = tuple(temp_match_pattern)
+            match_pattern.append(temp_match_pattern)
+            res[str(count) + '_' + match_field] = temp_match_pattern
+            # if str(tuple(sum(temp_match_pattern, []))) not in match_pattern_obj:
+            #     match_pattern_obj[str(tuple(sum(temp_match_pattern, [])))] = 1
+            # else:
+            #     match_pattern_obj[str(tuple(sum(temp_match_pattern, [])))] += 1
     print(count)
-    print(len(set(match_pattern)))
+    print(len(list(set([tuple(t) for t in match_pattern]))))
 
-    # f = open('./data/match4.json', 'w', encoding='utf8')
-    # f.write(json.dumps(res))
-    # f.close()
-    f1 = open('./data/match_pattern.txt', 'w', encoding='utf8')
-    f1.write(str(match_pattern))
-    f1.close()
+    f = open('./data/match7.json', 'w', encoding='utf8')
+    f.write(json.dumps(res))
+    f.close()
+    # f1 = open('./data/match_pattern_obj.json', 'w', encoding='utf8')
+    # f1.write(json.dumps(match_pattern_obj))
+    # f1.close()
     
 
 

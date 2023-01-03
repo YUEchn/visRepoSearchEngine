@@ -67,6 +67,7 @@
     width: 25vw;
     height: 90vh;
     display: flex;
+    position: absolute;
     flex-direction: column;
     box-sizing: border-box;
     border: 1px solid #eeeeee;;
@@ -80,4 +81,23 @@
 
 .flexlayout__tab{
     overflow: hidden !important;
+}
+
+#close-repo-portrait{
+    width: 100vw;
+    height: 90vh;
+    top:10vh;
+    background-color: rgba(27, 31, 36, 0.5);
+    position: absolute;
+    border-radius: 0px;
+    border: 0px rgb(0 94 211 / 15%);
+}
+
+#repo-portrait{
+    position: absolute;
+    width: 40vw;
+    height: 90vh;
+    top: 10vh;
+    right: 0;
+    background-color: aquamarine;
 }

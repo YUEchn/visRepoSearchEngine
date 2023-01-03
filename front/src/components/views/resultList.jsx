@@ -45,8 +45,7 @@ const ResultList = ({ result, query, loading }) => {
   const onCollapse = (e) => {
     let curRepo = e.target.parentNode.parentNode.id.split("$")[0];
     let tempFold = { [curRepo]: true };
-    let tempKeyNumber =
-      parseInt(e.target.parentNode.parentNode.id.split("$")[1]) + 1;
+    let tempKeyNumber = parseInt(e.target.parentNode.parentNode.id.split("$")[1]) + 1;
     let tempKey = { [curRepo]: [curRepo] + "$" + tempKeyNumber };
     setListFold((p) => ({ ...p, ...tempFold }));
     setListKey((p) => ({ ...p, ...tempKey }));
