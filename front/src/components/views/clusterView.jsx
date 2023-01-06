@@ -39,23 +39,24 @@ const ClusterView = () => {
   }, [init]);
 
   const drawMap = () => {
-    const radius = 20,
+    const inner_radius = 20,
       openWeight = 40000;
     const graph = {
+      maxLength: 3,
       nodes: [
-        { id: 0, rBounding: 40, weight: 10, isSelected: false },
-        { id: 1, rBounding: 40, weight: 10, isSelected: false },
-        { id: 2, rBounding: 40, weight: 10, isSelected: false },
-        { id: 3, rBounding: 40, weight: 10, isSelected: false },
-        { id: 4, rBounding: 40, weight: 10, isSelected: false },
-        { id: 5, rBounding: 40, weight: 10, isSelected: false },
-        { id: 6, rBounding: 40, weight: 10, isSelected: false },
-        { id: 7, rBounding: 40, weight: 10, isSelected: false },
-        { id: 8, rBounding: 40, weight: 10, isSelected: false },
-        { id: 9, rBounding: 40, weight: 10, isSelected: false },
-        { id: 10, rBounding: 40, weight: 10, isSelected: false },
-        { id: 11, rBounding: 40, weight: 10, isSelected: false },
-        { id: 12, rBounding: 40, weight: 10, isSelected: false },
+        { id: 0, rBounding: 40, weight: 10, isSelected: false, content: [0,1,2]},
+        { id: 1, rBounding: 40, weight: 10, isSelected: false, content: [0,2] },
+        { id: 2, rBounding: 40, weight: 10, isSelected: false, content: [2,0] },
+        { id: 3, rBounding: 40, weight: 10, isSelected: false, content: [0,1,2] },
+        { id: 4, rBounding: 40, weight: 10, isSelected: false, content: [0] },
+        { id: 5, rBounding: 40, weight: 10, isSelected: false, content: [1] },
+        { id: 6, rBounding: 40, weight: 10, isSelected: false, content: [0,1,2] },
+        { id: 7, rBounding: 40, weight: 10, isSelected: false, content: [2] },
+        { id: 8, rBounding: 40, weight: 10, isSelected: false, content: [0,1,2] },
+        { id: 9, rBounding: 40, weight: 10, isSelected: false, content: [1,2] },
+        { id: 10, rBounding: 40, weight: 10, isSelected: false, content: [2, 1] },
+        { id: 11, rBounding: 40, weight: 10, isSelected: false, content: [0,2,1] },
+        { id: 12, rBounding: 40, weight: 10, isSelected: false, content: [0,1,2] }
       ],
       links: [
         { source: 0, target: 1 },
@@ -135,6 +136,12 @@ const ClusterView = () => {
     computeAllCells();
     redrawAllCells();
 
+
+    const link = svg
+      .selectAll(".link")
+      .data(graph.links)
+      .join("line")
+      .attr("stroke", '#1e1e1e');
     // 外部圆形，表示出集群之间的连接关系
     const boundingCircle = svg
       .append("g")
@@ -145,7 +152,7 @@ const ClusterView = () => {
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y)
       .attr("r", (d) => d.rBounding)
-      .attr("fill", "rgba(255,0,0,0.5)");
+      .attr("fill", "rgba(204, 204, 204,1)");
 
     
     // 内部圆形，表示出当前的类型
@@ -155,11 +162,14 @@ const ClusterView = () => {
       .data(graph.nodes)
       .join("circle")
       .attr("class", "circle")
-      .attr("cx", (d) => d.x)
+      .attr("cx", (d) => {
+        console.log(d.x, d.y);
+        return d.x
+      })
       .attr("cy", (d) => d.y)
-      .attr("r", radius)
+      .attr("r", inner_radius)
       .attr("fill", (d, i) => d3.schemeCategory10[i % 10])
-        .call(
+      .call(
           d3
             .drag()
             .on("start", dragStart)
@@ -169,11 +179,41 @@ const ClusterView = () => {
         )
       .on("click", click);
 
-    const link = svg
-      .selectAll(".link")
-      .data(graph.links)
-      .join("line")
-      .attr("stroke", '#1e1e1e');
+    //   const circle = svg
+    //   .append("g")
+    //   .selectAll("g")
+    //   .data(graph.nodes)
+    //   .join("g")
+    //   .attr("class", "circle-g")
+    //   .attr("fill", "white")
+    //   .attr('transform', d => {
+    //     console.log(d.x, d.y);
+    //     return `translate(${d.x+ origin_width/2}, ${d.y + origin_height/2})`
+    //   })
+    //   .call(
+    //       d3
+    //         .drag()
+    //         .on("start", dragStart)
+    //         .on("drag", drag)
+    //         .on("end", dragEnd)
+    //         .on("start.update drag.update end.update", update)
+    //     )
+    //   .on("click", click);
+
+    // 绘制圆内部内容
+    const inner_arc = d3.arc()
+                        .innerRadius(inner_radius-10)
+                        .outerRadius(inner_radius-5)
+                        .startAngle(i => (2*Math.PI)/graph.maxLength* i -2)
+                        .endAngle(i => (2*Math.PI)/graph.maxLength* (i+1) - 2)
+                        .cornerRadius(50)
+                        .padAngle(0.1)
+    circle.selectAll('path').data(d => d.content).
+        join('path')
+            .attr('d', (d, i) => inner_arc(i))
+            .attr('stroke', 'green')
+            .attr('fill', 'none')
+
 
     function update() {
       circle.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
