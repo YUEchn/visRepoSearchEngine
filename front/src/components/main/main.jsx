@@ -170,7 +170,6 @@ const Main = () => {
               id="close-repo-portrait"
               aria-label="Close"
               onClick={()=>{
-                console.log('点击了');
                 setSelectRepo("")
               }}
             ></button>
