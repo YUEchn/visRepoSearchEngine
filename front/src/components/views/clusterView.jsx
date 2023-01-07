@@ -11,6 +11,16 @@ import d3ForceLimit from "d3-force-limit";
 var origin_width = 0;
 var origin_height = 0;
 var svg;
+const inner_color_map = {
+  0: "#e5c494",
+  1: "#66c2a5",
+  2: "#d17552",
+  3: "#ffd92f",
+  4: "#889bc6",
+  5: "#a6d854",
+  6: "#b3b3b3",
+  7: "#e78ac3",
+};
 const ClusterView = () => {
   const [init, setInit] = useState(false);
   const resizeRef = useRef(null);
@@ -31,8 +41,8 @@ const ClusterView = () => {
 
   useEffect(() => {
     if (init) {
-      origin_width = Math.floor(resizeRef.current.offsetWidth)*0.9; // 初始化
-      origin_height = Math.floor(resizeRef.current.offsetHeight)*0.9;
+      origin_width = Math.floor(resizeRef.current.offsetWidth) * 0.9; // 初始化
+      origin_height = Math.floor(resizeRef.current.offsetHeight) * 0.9;
       drawMap();
       //   window.addEventListener("resize", resizeChange);
     }
@@ -44,19 +54,79 @@ const ClusterView = () => {
     const graph = {
       maxLength: 3,
       nodes: [
-        { id: 0, rBounding: 40, weight: 10, isSelected: false, content: [0,1,2]},
-        { id: 1, rBounding: 40, weight: 10, isSelected: false, content: [0,2] },
-        { id: 2, rBounding: 40, weight: 10, isSelected: false, content: [2,0] },
-        { id: 3, rBounding: 40, weight: 10, isSelected: false, content: [0,1,2] },
+        {
+          id: 0,
+          rBounding: 40,
+          weight: 10,
+          isSelected: false,
+          content: [0, 1, 2],
+        },
+        {
+          id: 1,
+          rBounding: 40,
+          weight: 10,
+          isSelected: false,
+          content: [0, 2],
+        },
+        {
+          id: 2,
+          rBounding: 40,
+          weight: 10,
+          isSelected: false,
+          content: [2, 0],
+        },
+        {
+          id: 3,
+          rBounding: 40,
+          weight: 10,
+          isSelected: false,
+          content: [0, 1, 2],
+        },
         { id: 4, rBounding: 40, weight: 10, isSelected: false, content: [0] },
         { id: 5, rBounding: 40, weight: 10, isSelected: false, content: [1] },
-        { id: 6, rBounding: 40, weight: 10, isSelected: false, content: [0,1,2] },
+        {
+          id: 6,
+          rBounding: 40,
+          weight: 10,
+          isSelected: false,
+          content: [0, 1, 2],
+        },
         { id: 7, rBounding: 40, weight: 10, isSelected: false, content: [2] },
-        { id: 8, rBounding: 40, weight: 10, isSelected: false, content: [0,1,2] },
-        { id: 9, rBounding: 40, weight: 10, isSelected: false, content: [1,2] },
-        { id: 10, rBounding: 40, weight: 10, isSelected: false, content: [2, 1] },
-        { id: 11, rBounding: 40, weight: 10, isSelected: false, content: [0,2,1] },
-        { id: 12, rBounding: 40, weight: 10, isSelected: false, content: [0,1,2] }
+        {
+          id: 8,
+          rBounding: 40,
+          weight: 10,
+          isSelected: false,
+          content: [0, 1, 2],
+        },
+        {
+          id: 9,
+          rBounding: 40,
+          weight: 10,
+          isSelected: false,
+          content: [1, 2],
+        },
+        {
+          id: 10,
+          rBounding: 40,
+          weight: 10,
+          isSelected: false,
+          content: [2, 1],
+        },
+        {
+          id: 11,
+          rBounding: 40,
+          weight: 10,
+          isSelected: false,
+          content: [0, 2, 1],
+        },
+        {
+          id: 12,
+          rBounding: 40,
+          weight: 10,
+          isSelected: false,
+          content: [0, 1, 2],
+        },
       ],
       links: [
         { source: 0, target: 1 },
@@ -99,25 +169,29 @@ const ClusterView = () => {
       return [];
     }); // 存储每一个site的顶点
 
-    const cellLiner = d3.line();
+    // const cellLiner = d3.line();
+    // 闭合的凸包
+    const cellLiner = d3.line().curve(d3.curveBasisClosed);
     const simulation = d3
       .forceSimulation() // 创建一个新的力导向图；
       .nodes(graph.nodes) // 添加节点
       .force("charge", d3.forceManyBody())
-    //   .alpha(0.2)
-    //   .alphaDecay(0) //设置 alpha 衰减率.迭代150，默认0.0228
-    //   .velocityDecay(0.8) //默认为 0.4,较低的衰减系数可以使得迭代次数更多，其布局结果也会更理性，但是可能会引起数值不稳定从而导致震荡。
+      //   .alpha(0.2)
+      //   .alphaDecay(0) //设置 alpha 衰减率.迭代150，默认0.0228
+      //   .velocityDecay(0.8) //默认为 0.4,较低的衰减系数可以使得迭代次数更多，其布局结果也会更理性，但是可能会引起数值不稳定从而导致震荡。
       .force("center", d3.forceCenter(origin_width / 2, origin_height / 2)) // 添加力学模型并进行仿真，让视图位于区域中心
       .force(
         "collision",
         d3.forceCollide((d) => d.rBounding)
       ) //设置节点碰撞半径>= 点半径避免重叠
       .force("walls", wallForce) // 让节点不超出区域边界，因为边界的限制，会让节点之间重叠
-      .force(    //link froce(弹簧模型) 可以根据 link distance 将有关联的两个节点拉近或者推远。力的强度与被链接两个节点的距离成比例，类似弹簧力。
+      .force(
+        //link froce(弹簧模型) 可以根据 link distance 将有关联的两个节点拉近或者推远。力的强度与被链接两个节点的距离成比例，类似弹簧力。
         "link",
         d3
           .forceLink(graph.links)
-          .id(function (d) {   //设置或获取link中节点的查找方式
+          .id(function (d) {
+            //设置或获取link中节点的查找方式
             return d.id;
           })
           // .distance(50)    //设置或获取两个节点之间的距离)
@@ -127,21 +201,20 @@ const ClusterView = () => {
 
     // voronoi布局
     let voronoi = d3WeightedVoronoi() // set the weight accessor
-    .clip([
-      [0, 0],
-      [0, origin_height],
-      [origin_width, origin_height],
-      [origin_width, 0],
-    ]);
+      .clip([
+        [0, 0],
+        [0, origin_height],
+        [origin_width, origin_height],
+        [origin_width, 0],
+      ]);
     computeAllCells();
     redrawAllCells();
-
 
     const link = svg
       .selectAll(".link")
       .data(graph.links)
       .join("line")
-      .attr("stroke", '#1e1e1e');
+      .attr("stroke", "#1e1e1e");
     // 外部圆形，表示出集群之间的连接关系
     const boundingCircle = svg
       .append("g")
@@ -154,69 +227,59 @@ const ClusterView = () => {
       .attr("r", (d) => d.rBounding)
       .attr("fill", "rgba(204, 204, 204,1)");
 
-    
-    // 内部圆形，表示出当前的类型
     const circle = svg
       .append("g")
-      .selectAll("circle")
+      .selectAll("g")
       .data(graph.nodes)
-      .join("circle")
-      .attr("class", "circle")
-      .attr("cx", (d) => {
-        console.log(d.x, d.y);
-        return d.x
-      })
-      .attr("cy", (d) => d.y)
-      .attr("r", inner_radius)
-      .attr("fill", (d, i) => d3.schemeCategory10[i % 10])
+      .join("g")
+      .attr("class", "circle-g")
+      .attr("fill", "white")
       .call(
-          d3
-            .drag()
-            .on("start", dragStart)
-            .on("drag", drag)
-            .on("end", dragEnd)
-            .on("start.update drag.update end.update", update)
-        )
+        d3
+          .drag()
+          .on("start", dragStart)
+          .on("drag", drag)
+          .on("end", dragEnd)
+          .on("start.update drag.update end.update", update)
+      )
       .on("click", click);
 
-    //   const circle = svg
-    //   .append("g")
-    //   .selectAll("g")
-    //   .data(graph.nodes)
-    //   .join("g")
-    //   .attr("class", "circle-g")
-    //   .attr("fill", "white")
-    //   .attr('transform', d => {
-    //     console.log(d.x, d.y);
-    //     return `translate(${d.x+ origin_width/2}, ${d.y + origin_height/2})`
-    //   })
-    //   .call(
-    //       d3
-    //         .drag()
-    //         .on("start", dragStart)
-    //         .on("drag", drag)
-    //         .on("end", dragEnd)
-    //         .on("start.update drag.update end.update", update)
-    //     )
-    //   .on("click", click);
-
     // 绘制圆内部内容
-    const inner_arc = d3.arc()
-                        .innerRadius(inner_radius-10)
-                        .outerRadius(inner_radius-5)
-                        .startAngle(i => (2*Math.PI)/graph.maxLength* i -2)
-                        .endAngle(i => (2*Math.PI)/graph.maxLength* (i+1) - 2)
-                        .cornerRadius(50)
-                        .padAngle(0.1)
-    circle.selectAll('path').data(d => d.content).
-        join('path')
-            .attr('d', (d, i) => inner_arc(i))
-            .attr('stroke', 'green')
-            .attr('fill', 'none')
+    circle
+      .append("circle")
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("r", inner_radius)
+      .attr("class", "center-point")
+      .attr("fill", "white");
 
+    const inner_arc = d3
+      .arc()
+      .innerRadius(inner_radius - 10)
+      .outerRadius(inner_radius - 5)
+      .startAngle((i) => ((2 * Math.PI) / graph.maxLength) * i - 2)
+      .endAngle((i) => ((2 * Math.PI) / graph.maxLength) * (i + 1) - 2)
+      .cornerRadius(1)
+      .padAngle(0.05);
+    const inner_arc_g = circle
+      .selectAll("path")
+      .data((d) => d.content)
+      .join("path")
+      .attr("d", (d, i) => inner_arc(i))
+      .attr("stroke-width", 0)
+      .attr("fill", (d) => inner_color_map[d]);
+
+    inner_arc_g
+      .append("circle")
+      .attr("cx", (d) => inner_arc.centroid(d)[0])
+      .attr("cy", (d) => inner_arc.centroid(d)[1])
+      .attr("r", 2)
+      .attr("class", "center-point")
+      .attr("fill", "red");
 
     function update() {
-      circle.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+      circle.attr("transform", (d) => "translate(" + d.x + "," + d.y + ")");
+
       boundingCircle
         .attr("cx", (d) => d.x)
         .attr("cy", (d) => d.y)
@@ -231,8 +294,8 @@ const ClusterView = () => {
         .attr("x2", (d) => d.target.x)
         .attr("y2", (d) => d.target.y);
 
-        computeAllCells();
-        redrawAllCells();
+      computeAllCells();
+      redrawAllCells();
     }
 
     function dragStart(event, d) {
@@ -250,8 +313,6 @@ const ClusterView = () => {
     }
 
     function click(event, d) {
-      console.log(d);
-
       if (d.isSelected) {
         // 收缩
         d.weight = 0;
@@ -305,7 +366,9 @@ const ClusterView = () => {
     function zoomAction(event) {
       svg.attr(
         "transform",
-        `translate(${origin_width+ event.transform.x}, ${origin_height+ event.transform.y})` +
+        `translate(${origin_width + event.transform.x}, ${
+          origin_height + event.transform.y
+        })` +
           "scale(" +
           event.transform.k +
           ")"
