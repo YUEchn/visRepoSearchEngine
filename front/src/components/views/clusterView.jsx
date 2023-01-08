@@ -452,31 +452,12 @@ const ClusterView = () => {
                         nodeEnter({
                             selection,
                             current: node,
-                            getColor,
-                            getId,
-                            getName,
-                            handleNodeClick,
-                            handleHoverEnter,
-                            handleHoverExit,
-                            phase1Duration,
-                            phase2Duration,
-                            prevouse: current,
-                            strokeWidth,
-                            dispatcher,
-                            createEventName
+                            prevouse: current
                         }),
                     (selection) =>
                         nodeUpdate({
                             selection,
-                            current: node,
-                            getName,
-                            handleHoverEnter,
-                            handleHoverExit,
-                            phase1Duration,
-                            phase2Duration,
-                            strokeWidth,
-                            dispatcher,
-                            createEventName
+                            current: node
                         }),
                     nodeExit
                 );
@@ -520,18 +501,7 @@ const ClusterView = () => {
         function nodeEnter({
             selection,
             current,
-            getColor,
-            getId,
-            getName,
-            handleNodeClick,
-            handleHoverEnter,
-            handleHoverExit,
-            phase1Duration,
-            phase2Duration,
-            previouse,
-            strokeWidth,
-            dispatcher,
-            createEventName
+            previouse
         }){
             delay(previouse === null ? 0 : phase1Duration).then(()=>{
                 console.log(551, selection);
@@ -581,16 +551,7 @@ const ClusterView = () => {
 
         function nodeUpdate({
             selection,
-            current,
-            getImage,
-            getName,
-            handleHoverEnter,
-            handleHoverExit,
-            phase1Duration,
-            phase2Duration,
-            strokeWidth,
-            dispatcher,
-            createEventName
+            current
         }){
             const branches = selection
                 .filter((d) => d.height > 0)
