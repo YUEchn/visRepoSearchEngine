@@ -2,6 +2,8 @@ import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
 import * as seedrandom from "seedrandom";
 import { voronoiTreemap as d3VoronoiTreemap } from 'd3-voronoi-treemap';
+import {hexgrid as d3Hexgrid} from 'd3-hexgrid'
+import {hexbin as d3Hexbin} from 'd3-hexbin'
 // 首先根据力导向图生成布局
 // 然后生成Voronoi Grid
 
@@ -66,6 +68,11 @@ const ClusterView = () => {
             EVENT_TYPE_ENTER_TRANSITION_COMPLETE,
             EVENT_TYPE_UPDATE_TRANSITION_COMPLETE
         ]
+        const phase1Duration = 1200, phase2Duration = 500
+        function delay(ms){
+            return new Promise(resolve=> setTimeout(resolve,ms));
+        }
+
         // connection需要排序
         const graph = {
             maxLength: 3,
@@ -187,9 +194,100 @@ const ClusterView = () => {
                 { source: 12, target: 10 },
             ],
         };
-        const Origindata = { "id": "flare", "children": [{ "id": "analytics", "children": [{ "id": "cluster", "children": [{ "id": "AgglomerativeCluster", "value": 3938 }, { "id": "CommunityStructure", "value": 3812 }, { "id": "HierarchicalCluster", "value": 6714 }, { "id": "MergeEdge", "value": 743 }] }, { "id": "graph", "children": [{ "id": "BetweennessCentrality", "value": 3534 }, { "id": "LinkDistance", "value": 5731 }, { "id": "MaxFlowMinCut", "value": 7840 }, { "id": "ShortestPaths", "value": 5914 }, { "id": "SpanningTree", "value": 3416 }] }, { "id": "optimization", "children": [{ "id": "AspectRatioBanker", "value": 7074 }] }] }, { "id": "animate", "children": [{ "id": "Easing", "value": 17010 }, { "id": "FunctionSequence", "value": 5842 }, { "id": "interpolate", "children": [{ "id": "ArrayInterpolator", "value": 1983 }, { "id": "ColorInterpolator", "value": 2047 }, { "id": "DateInterpolator", "value": 1375 }, { "id": "Interpolator", "value": 8746 }, { "id": "MatrixInterpolator", "value": 2202 }, { "id": "NumberInterpolator", "value": 1382 }, { "id": "ObjectInterpolator", "value": 1629 }, { "id": "PointInterpolator", "value": 1675 }, { "id": "RectangleInterpolator", "value": 2042 }] }, { "id": "ISchedulable", "value": 1041 }, { "id": "Parallel", "value": 5176 }, { "id": "Pause", "value": 449 }, { "id": "Scheduler", "value": 5593 }, { "id": "Sequence", "value": 5534 }, { "id": "Transition", "value": 9201 }, { "id": "Transitioner", "value": 19975 }, { "id": "TransitionEvent", "value": 1116 }, { "id": "Tween", "value": 6006 }] }, { "id": "display", "children": [{ "id": "DirtySprite", "value": 8833 }, { "id": "LineSprite", "value": 1732 }, { "id": "RectSprite", "value": 3623 }, { "id": "TextSprite", "value": 10066 }] }, { "id": "scale", "children": [{ "id": "IScaleMap", "value": 2105 }, { "id": "LinearScale", "value": 1316 }, { "id": "LogScale", "value": 3151 }, { "id": "OrdinalScale", "value": 3770 }, { "id": "QuantileScale", "value": 2435 }, { "id": "QuantitativeScale", "value": 4839 }, { "id": "RootScale", "value": 1756 }, { "id": "Scale", "value": 4268 }, { "id": "ScaleType", "value": 1821 }, { "id": "TimeScale", "value": 5833 }] }] }
-        
-        const data = d3.hierarchy(Origindata).sum((d) => (d.children ? 0 : Math.random()))
+        const cluster_arr = []
+        const Origindata ={
+            "id": 999,
+            "maxLength": 3,
+            "maxConnection": 10,
+            "children": [
+              {
+                "id": 0,
+                "value": 7074,
+                content: [0, 1, 2],
+                connection: [0, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+              },
+              {
+                "id": 1,
+                "value": 3938,
+                content: [0, 2],
+                connection: [4, 0, 7, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+              },
+              {
+                "id": 2,
+                "value": 7576840,
+                content: [2, 0],
+                connection: [5, 7, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+              },
+              {
+                "id": 3,
+                "value": 212,
+                content: [0, 1, 2],
+                connection: [0, 4, 10, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0]
+              },
+              {
+                "id": 4,
+                "value": 7074, 
+                content: [0],
+                connection: [0, 0, 0, 6, 0, 8, 0, 0, 0, 5, 0, 0, 0]
+              },
+              {
+                "id": 5,
+                "value": 3938, 
+                content: [1],
+                connection: [0, 0, 0, 0, 8, 0, 4, 0, 0, 0, 0, 0, 0]
+              },
+              {
+                "id": 6,
+                "value": 7576840,
+                content: [0, 1, 2],
+                connection: [0, 0, 0, 0, 0, 4, 0, 1, 3, 0, 0, 0, 0]
+              },
+              {
+                "id": 7,
+                "value": 212, 
+                content: [2],
+                connection: [0, 0, 0, 0, 0, 0, 1, 0, 8, 0, 0, 0, 0]
+              },
+              {
+                "id": 8,
+                "value": 7074,
+                content: [0, 1, 2],
+                connection: [0, 0, 0, 0, 0, 0, 3, 8, 0, 0, 0, 0, 0]
+              },
+              {
+                "id": 9,
+                "value": 3938,
+                content: [1, 2],
+                connection: [0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 7, 3, 0]
+              },
+              {
+                "id": 10,
+                "value": 7576840,
+                content: [2, 1],
+                connection: [0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 4, 2]
+              },
+              {
+                "id": 11,
+                "value": 212,
+                content: [0, 2, 1],
+                connection: [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 0, 8]
+              },
+              {
+                "id": 12,
+                "value": 656,
+                content: [0, 2, 1],
+                connection: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]   // 数值表示权重，位置表示集群
+              }
+            ]
+          }
+          
+          
+        const data = d3.hierarchy(Origindata).sum((d) => {
+            if(!d.children){
+                cluster_arr.push(d.id)
+            }
+            return d.children ? 0 : Math.random()
+        })
         const svg = d3
             .select("#cluster-map")
             .append("svg")
@@ -221,6 +319,9 @@ const ClusterView = () => {
         const baseShape = createBaseShape(origin_width, origin_height, upButtonSize, showUpButton);
         let current = null;
         const focusParent = () =>{
+            if(current.parent){    // 当前是第二层
+                delay(phase1Duration).then(() => d3.selectAll('.circle-g').style('visibility', 'visible'))
+            }
             return current.parent ? renderNode(current.parent) : null;
         }
         dispatcher.on(EVENT_TYPE_FOCUS, renderNode);
@@ -319,6 +420,8 @@ const ClusterView = () => {
                 .attr("opacity", 1);
         };
         const handleNodeClick = (node) => {
+            
+            d3.selectAll('.circle-g').style('visibility', 'hidden')
             const target =
                 node !== current
                     ? node.ancestors().find((d) => d.depth === current.depth + 1)
@@ -332,7 +435,6 @@ const ClusterView = () => {
         const colorScale = d3.scaleSequential(d3.interpolateTurbo)
         const getColor = (d) => colorScale(d.colorValue)
         const getName = (d) => d.data.name
-        const phase1Duration = 1200, phase2Duration = 500
         const uuid = () =>
             ([1e7] + 1e3 + 4e3 + 8e3 + 1e11).replace(/[018]/g, (c) =>
                 (
@@ -468,16 +570,13 @@ const ClusterView = () => {
         renderNode(data);
         
         const computeAngle = ([x0, y0], [x1, y1]) => {
-            console.log(Math.atan2(y1 - y0, x1 - x0))
             return Math.atan2(y1 - y0, x1 - x0)
           }
         function coordinatePolygons(source, target, pointCount = 20){
             const expandedPolygon = fixedPointCount(target, pointCount);
             if (!source || source.length === 0) return expandedPolygon;
-            console.log('sourceCentroid', source, expandedPolygon);
             const sourceCentroid = computeCentroid(source);
             const targetCentroid = computeCentroid(expandedPolygon);
-            console.log('sourceCentroid', sourceCentroid);
             const startTheta = computeAngle(sourceCentroid, source[0]);
             const pointWidthClosestTheta = expandedPolygon
                 .map((point, i) => ({
@@ -495,16 +594,13 @@ const ClusterView = () => {
                 ? coordinatedPolygon.reverse()
                 : coordinatedPolygon;
         }
-        function delay(ms){
-            return new Promise(resolve=> setTimeout(resolve,ms));
-        }
+
         function nodeEnter({
             selection,
             current,
             previouse
         }){
             delay(previouse === null ? 0 : phase1Duration).then(()=>{
-                console.log(551, selection);
                 const all = selection.append("g").classed("node", true);
                  const t = new d3.transition().duration(phase2Duration);
                 //  const applyLabels = () => {
@@ -522,6 +618,12 @@ const ClusterView = () => {
                 //  };
            
                 //  t.end().then(applyLabels, applyLabels);
+                const hexbin = d3Hexbin()
+                .x(d => d.x)
+                .y(d => d.y)
+                .radius(5)
+                .extent([[0, 0], [origin_width, origin_height]])
+
 
                  all
                    .append("polygon")
@@ -533,8 +635,155 @@ const ClusterView = () => {
                    .attr("stroke-width", 0)
                    .attr("stroke-linejoin", "round")
                    .attr("pointer-events", (d) => (d.height === 0 ? "fill" : "none"))
-                   .attr("stroke-width", (d) => strokeWidth(d.depth));
-           
+                   .attr("stroke-width", (d) => strokeWidth(d.depth))
+                // all.selectAll(".hexagon")
+                //    .data(d => d.polygon)
+                //    join()
+
+                const innerCirle = all
+                    .filter((d) => d.depth === 1)
+                    .append("g")
+                    .attr('transform', d => "translate(" + d.polyProps.centroid[0] + "," + d.polyProps.centroid[1] + ")")
+                    .attr("class", "circle-g")
+                    .style("visibility", "visible")
+                    .attr('id', d => 'cirle-g-' + d.data.id)
+                    .on('mouseover', function(event, d){
+                        if(d3.select(this).style('visibility') === 'hidden') return
+                        let sourcePos = d.polyProps.centroid;   // 当前节点的中心坐标
+                        d.data.connection.forEach((n, index) =>{
+                            if(n !== 0){
+                                let targetPos = d3.select('#cirle-g-' + index)._groups[0][0].__data__.polyProps.centroid
+                                console.log(sourcePos, targetPos);
+                                //创建一个对角线生成器
+                                let dx = 20, cpx, cpy;
+                                let dy = Math.round(Math.abs( ( ( targetPos[1] - targetPos[0] ) / ( sourcePos[1] - sourcePos[0] ) ) * dx ));
+                                //向右上弯曲
+                                if(targetPos[1]<sourcePos[1]){
+                                    cpx = Math.round(( sourcePos[0] + targetPos[0] ) / 2 + dx);
+                                    cpy = Math.round(( sourcePos[1] + targetPos[1] ) / 2 + dy);
+                                }else{
+                                    cpx = Math.round(( sourcePos[0] + targetPos[0] ) / 2 + dx);
+                                    cpy = Math.round(( sourcePos[1] + targetPos[1] ) / 2 + dy);
+                
+                                }
+                                let path = d3.path();
+                                path.moveTo(sourcePos[0],sourcePos[1]);
+                                path.quadraticCurveTo(cpx,cpy,targetPos[0],targetPos[1]);
+                                svg.append('path')
+                                .attr('d', path.toString())
+                                .style('fill','none')
+                                .attr('class', 'node-to-node')
+                                .style('stroke', 'rgba(55, 55, 61, 0.5)')
+                                .style('stroke-width','2');
+                            }
+                        })
+
+                    })
+                    .on('mouseout', function(event, d){
+                        d3.selectAll('.node-to-node').remove()   // 移除节点之间的所有连接
+                    })
+
+
+                // 圆心点
+                innerCirle
+                    .append("circle")
+                    .attr("cx", 0)
+                    .attr("cy", 0)
+                    .attr("r", innerRadius-6)
+                    .attr("class", "center-point")
+                    .attr("id", d => 'node-' + d.data.id)
+                    .attr("fill", "white")
+                innerCirle
+                    .append("text")
+                    .attr("x", 0)
+                    .attr("y", 5)
+                    .attr("font", "10px sans-serif")
+                    .attr("fill", "black")
+                    .attr("text-anchor", "middle")
+                    .text((d) => d.data.id)
+                const innerArc = d3
+                                .arc()
+                                .innerRadius(innerRadius - 10)
+                                .outerRadius(innerRadius - 1)
+                                .startAngle((i) => ((2 * Math.PI) / data.data.maxLength) * i - 2)
+                                .endAngle((i) => ((2 * Math.PI) / data.data.maxLength) * (i + 1) - 2)
+                                .cornerRadius(1)
+                                .padAngle(0.05);
+                const innerArcPath = innerCirle
+                    .selectAll("path")
+                    .data((d) => d.data.content)
+                    .join("path")
+                    .attr("d", (d, i) => innerArc(i))
+                    .attr("stroke-width", '1')
+                    .attr("fill", (d) => inner_color_map[d]);
+                
+                // 绘制外围bar表示关系
+                const circleRingG = innerCirle.append('g').attr("class", 'circle-ring-g')
+                const connectionArc = d3.arc()
+                                        .innerRadius(d => connectionY(0))
+                                        .outerRadius(d => connectionY(d))
+                                        .startAngle((d, i) => connectionX(i))
+                                        .endAngle((d, i) => connectionX(i) + connectionX.bandwidth())
+                                        .padAngle(0.05)
+                                        // .padRadius(innerR)
+                const connectionX = d3.scaleBand()
+                                    .domain(cluster_arr.map((d, i) => i))
+                                    .range([0, 2 * Math.PI])
+                                    .align(0)
+                const connectionY = d3.scaleRadial()
+                                    .domain([0, data.data.maxConnection])
+                                    .range([innerRadius+ 1, innerRadius + 10])
+                circleRingG.selectAll("path")
+                        .data(d => d.data.connection)
+                        .join("path")
+                        .attr("d", connectionArc)
+                        .attr('id', function(d, i){
+                            let curCluster = d3.select(this.parentNode)._groups[0][0].__data__.data.id;
+                            return 'connection-' + curCluster.toString() + '-' + i.toString()
+                        })
+                        .attr('fill', 'black')
+                        .attr("stroke", 'rgba(30, 30, 30, 1)')
+                        .attr("value", d => d)
+                        .attr("center", connectionArc.centroid)
+                        .attr("stroke-width", '1px')
+                        .on('mouseover', function(event, d){
+                            if(d3.select(this.parentNode.parentNode).style('visibility') === 'hidden') return
+                            event.stopPropagation();    // 组织事件传播
+                            if(d3.select(this).attr('value') === '0') return 
+                            let curConnection = d3.select(this).attr("id").split('-').slice(1, 3)
+                            let sourceG = d3.select(this.parentNode)._groups[0][0].__data__.polyProps.centroid
+                            let sourceCenter = d3.select(this).attr('center').split(",").map(parseFloat)
+                            let sourcePos = [sourceCenter[0] + sourceG[0], sourceCenter[1] + sourceG[1]]
+                            let targetObj = d3.select('#connection-' + curConnection[1] + '-' + curConnection[0])
+                            let targetCenter = targetObj.attr('center').split(",").map(parseFloat)
+                            let targetG = d3.select(targetObj._groups[0][0].parentNode)._groups[0][0].__data__.polyProps.centroid
+                            let targetPos = [targetCenter[0] + targetG[0], targetCenter[1] + targetG[1]]
+                            //创建一个对角线生成器
+                            let dx = 20, cpx, cpy;
+                            let dy = Math.round(Math.abs( ( ( targetPos[1] - targetPos[0] ) / ( sourcePos[1] - sourcePos[0] ) ) * dx ));
+                            //向右上弯曲
+                            if(targetPos[1]<sourcePos[1]){
+                                cpx = Math.round(( sourcePos[0] + targetPos[0] ) / 2 + dx);
+                                cpy = Math.round(( sourcePos[1] + targetPos[1] ) / 2 + dy);
+                            }else{
+                                cpx = Math.round(( sourcePos[0] + targetPos[0] ) / 2 + dx);
+                                cpy = Math.round(( sourcePos[1] + targetPos[1] ) / 2 + dy);
+            
+                            }
+                            let path = d3.path();
+                            path.moveTo(sourcePos[0],sourcePos[1]);
+                            path.quadraticCurveTo(cpx,cpy,targetPos[0],targetPos[1]);
+                            svg.append('path')
+                            .attr('d', path.toString())
+                            .style('fill','none')
+                            .attr('id', 'temp-line')
+                            .style('stroke', 'rgba(55, 55, 61, 0.5)')
+                            .style('stroke-width','2');
+                        })
+                        .on("mouseout", function(){
+                            d3.select("#temp-line").remove()
+                        })
+
                  all
                    .filter((d) => d.height === 0)
                    .on(createEventName("click"), (event, node) =>
@@ -590,8 +839,7 @@ const ClusterView = () => {
                             handleHoverExit(node, event)
                         );
                     dispatcher.call(EVENT_TYPE_UPDATE_TRANSITION_COMPLETE, this);
-                },
-                (reject) => { } //console.error("reject baz", reject)
+                }
             );
 
             leaves
@@ -609,11 +857,12 @@ const ClusterView = () => {
                     .map(d => d / shape.length)
         }
         function createMeasurablePath(points){
-            return d3
-                .select('svg')
+            return d3.select("#root")
+                .append('svg')
                 .append("path")
                 .datum(points)
                 .attr("d", d3.line())
+                .attr("stroke", 'none')
                 .node()
         }
         function computeDistances(coordinates){

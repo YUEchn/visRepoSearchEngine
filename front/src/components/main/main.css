@@ -18,7 +18,7 @@
     margin-left: 3vw;
     width: 80vw;
     height: 100%;
-    /* text-align: -webkit-center; */  /* 可以让块级元素居中 */
+    /* text-align: -webkit-center; */  /* 可以让块级元素水平居中 */
     display: flex;
     /* justify-content: center; */
     align-items: center;
@@ -32,9 +32,26 @@
 #search-filter{
     width: 100vw;
     height: 3vh;
+    display: flex;
+    align-items:center;
+    vertical-align: middle;
+    /* background-color: rgb(43, 50, 65); */
+}
+
+#result-filter{
+    width: 25vw;
+    height: 3vh;
+    /* float: left; */
     background-color: rgb(43, 50, 65);
 }
 
+#time-filter{
+    width: 50vw;
+    /* height: 100%; */
+    /* float: left; */
+    padding-left: 10px;
+    background-color: rgb(156, 220, 218);
+}
 :where(.css-dev-only-do-not-override-acm2ia).ant-btn-primary{
     background-color: gray;
 }

@@ -10,6 +10,7 @@ import SimilarRepos from "../views/similarRepos";
 import RelevantRepos from "../views/revelantRepos";
 import ClusterView from "../views/clusterView";
 import RepoPortrait from "../views/repoPortrait";
+import TimeFilter from "../views/timeFilter";
 const { Search } = Input;
 
 const Main = () => {
@@ -151,7 +152,12 @@ const Main = () => {
           </div>
         </div>
       </div>
-      <div id="search-filter">过滤得选项</div>
+      <div id="search-filter">
+        <div id="result-filter"></div>
+        <div id="time-filter">
+          <TimeFilter></TimeFilter>
+        </div>
+      </div>
       <div id="search-result">
         {query && (
             <div id="list-container">
