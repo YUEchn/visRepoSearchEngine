@@ -1,10 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
-import { weightedVoronoi as d3WeightedVoronoi } from "d3-weighted-voronoi";
-// import  'd3-voronoi-map';
-import d3ForceLimit from "d3-force-limit";
-// import 'd3-voronoi-treemap';
-
+import * as seedrandom from "seedrandom";
+import { voronoiTreemap as d3VoronoiTreemap } from 'd3-voronoi-treemap';
 // 首先根据力导向图生成布局
 // 然后生成Voronoi Grid
 
@@ -52,10 +49,27 @@ const ClusterView = () => {
         const innerRadius = 20,
             openWeight = 40000,
             ringIncrement = 3;
+        const margin = { top: 0, right: 0, bottom: 0, left: 0 }, minHeight = 0
+        const EVENT_TYPE_HOVER_GAIN = "hover-gain";
+        const EVENT_TYPE_HOVER_LOSE = "hover-lose";
+        const EVENT_TYPE_FOCUS = "focus";
+        const EVENT_TYPE_FOCUS_GAIN = "focus-gain";
+        const EVENT_TYPE_FOCUS_LOSE = "focus-lose";
+        const EVENT_TYPE_ENTER_TRANSITION_COMPLETE = "enter-transition-complete";
+        const EVENT_TYPE_UPDATE_TRANSITION_COMPLETE = "update-transition-complete";
+        const EVENT_TYPES = [
+            EVENT_TYPE_FOCUS,
+            EVENT_TYPE_FOCUS_GAIN,
+            EVENT_TYPE_FOCUS_LOSE,
+            EVENT_TYPE_HOVER_GAIN,
+            EVENT_TYPE_HOVER_LOSE,
+            EVENT_TYPE_ENTER_TRANSITION_COMPLETE,
+            EVENT_TYPE_UPDATE_TRANSITION_COMPLETE
+        ]
         // connection需要排序
         const graph = {
             maxLength: 3,
-            maxConnection: 10, 
+            maxConnection: 10,
             nodes: [
                 {
                     id: 0,
@@ -63,7 +77,7 @@ const ClusterView = () => {
                     weight: 10,
                     isSelected: false,
                     content: [0, 1, 2],
-                    connection: [0, 4, 5, 0, 0, 0,0, 0, 0, 0, 0, 0,0]
+                    connection: [0, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
                 },
                 {
                     id: 1,
@@ -71,7 +85,7 @@ const ClusterView = () => {
                     weight: 10,
                     isSelected: false,
                     content: [0, 2],
-                    connection:[4, 0, 7, 4, 0, 0,0, 0, 0, 0, 0, 0,0]
+                    connection: [4, 0, 7, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0]
                 },
                 {
                     id: 2,
@@ -79,7 +93,7 @@ const ClusterView = () => {
                     weight: 10,
                     isSelected: false,
                     content: [2, 0],
-                    connection:[5, 7, 0, 10, 0, 0,0, 0, 0,  0, 0, 0,0]
+                    connection: [5, 7, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0]
                 },
                 {
                     id: 3,
@@ -87,31 +101,35 @@ const ClusterView = () => {
                     weight: 10,
                     isSelected: false,
                     content: [0, 1, 2],
-                    connection: [0, 4, 10, 0, 6, 0,0, 0,  0, 0, 0, 0,0]
+                    connection: [0, 4, 10, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0]
                 },
-                { id: 4, rBounding: 7, weight: 10, isSelected: false, content: [0],
-                    connection: [0, 0, 0, 6, 0, 8,0, 0, 0, 5, 0, 0,0]
-                 },
-                { id: 5, rBounding: 90, weight: 10, isSelected: false, content: [1],
-                    connection: [0, 0, 0, 0, 8, 0,4, 0, 0, 0, 0, 0,0]},
+                {
+                    id: 4, rBounding: 7, weight: 10, isSelected: false, content: [0],
+                    connection: [0, 0, 0, 6, 0, 8, 0, 0, 0, 5, 0, 0, 0]
+                },
+                {
+                    id: 5, rBounding: 90, weight: 10, isSelected: false, content: [1],
+                    connection: [0, 0, 0, 0, 8, 0, 4, 0, 0, 0, 0, 0, 0]
+                },
                 {
                     id: 6,
                     rBounding: 3,
                     weight: 10,
                     isSelected: false,
                     content: [0, 1, 2],
-                    connection: [0, 0, 0, 0, 0, 4,0, 1, 3, 0, 0, 0,0]
+                    connection: [0, 0, 0, 0, 0, 4, 0, 1, 3, 0, 0, 0, 0]
                 },
-                { id: 7, rBounding: 12, weight: 10, isSelected: false, content: [2],
-                    connection: [0, 0, 0, 0, 0, 0,1, 0, 8, 0, 0, 0,0]
-                    },
+                {
+                    id: 7, rBounding: 12, weight: 10, isSelected: false, content: [2],
+                    connection: [0, 0, 0, 0, 0, 0, 1, 0, 8, 0, 0, 0, 0]
+                },
                 {
                     id: 8,
                     rBounding: 1,
                     weight: 10,
                     isSelected: false,
                     content: [0, 1, 2],
-                    connection:[0, 0, 0, 0, 0, 0,3, 8, 0, 0, 0, 0,0]
+                    connection: [0, 0, 0, 0, 0, 0, 3, 8, 0, 0, 0, 0, 0]
                 },
                 {
                     id: 9,
@@ -119,7 +137,7 @@ const ClusterView = () => {
                     weight: 10,
                     isSelected: false,
                     content: [1, 2],
-                    connection: [0, 0, 0, 0, 5, 0,0, 0, 0, 0, 7, 3,0]
+                    connection: [0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 7, 3, 0]
                 },
                 {
                     id: 10,
@@ -127,7 +145,7 @@ const ClusterView = () => {
                     weight: 10,
                     isSelected: false,
                     content: [2, 1],
-                    connection: [0, 0, 0, 0, 0, 0,0, 0, 0, 7, 0, 4,2]
+                    connection: [0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 4, 2]
                 },
                 {
                     id: 11,
@@ -135,7 +153,7 @@ const ClusterView = () => {
                     weight: 10,
                     isSelected: false,
                     content: [0, 2, 1],
-                    connection: [0, 0, 0, 0, 0, 0,0, 0, 0, 3, 4, 0,8]
+                    connection: [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 0, 8]
                 },
                 {
                     id: 12,
@@ -169,365 +187,554 @@ const ClusterView = () => {
                 { source: 12, target: 10 },
             ],
         };
+        const Origindata = { "id": "flare", "children": [{ "id": "analytics", "children": [{ "id": "cluster", "children": [{ "id": "AgglomerativeCluster", "value": 3938 }, { "id": "CommunityStructure", "value": 3812 }, { "id": "HierarchicalCluster", "value": 6714 }, { "id": "MergeEdge", "value": 743 }] }, { "id": "graph", "children": [{ "id": "BetweennessCentrality", "value": 3534 }, { "id": "LinkDistance", "value": 5731 }, { "id": "MaxFlowMinCut", "value": 7840 }, { "id": "ShortestPaths", "value": 5914 }, { "id": "SpanningTree", "value": 3416 }] }, { "id": "optimization", "children": [{ "id": "AspectRatioBanker", "value": 7074 }] }] }, { "id": "animate", "children": [{ "id": "Easing", "value": 17010 }, { "id": "FunctionSequence", "value": 5842 }, { "id": "interpolate", "children": [{ "id": "ArrayInterpolator", "value": 1983 }, { "id": "ColorInterpolator", "value": 2047 }, { "id": "DateInterpolator", "value": 1375 }, { "id": "Interpolator", "value": 8746 }, { "id": "MatrixInterpolator", "value": 2202 }, { "id": "NumberInterpolator", "value": 1382 }, { "id": "ObjectInterpolator", "value": 1629 }, { "id": "PointInterpolator", "value": 1675 }, { "id": "RectangleInterpolator", "value": 2042 }] }, { "id": "ISchedulable", "value": 1041 }, { "id": "Parallel", "value": 5176 }, { "id": "Pause", "value": 449 }, { "id": "Scheduler", "value": 5593 }, { "id": "Sequence", "value": 5534 }, { "id": "Transition", "value": 9201 }, { "id": "Transitioner", "value": 19975 }, { "id": "TransitionEvent", "value": 1116 }, { "id": "Tween", "value": 6006 }] }, { "id": "display", "children": [{ "id": "DirtySprite", "value": 8833 }, { "id": "LineSprite", "value": 1732 }, { "id": "RectSprite", "value": 3623 }, { "id": "TextSprite", "value": 10066 }] }, { "id": "scale", "children": [{ "id": "IScaleMap", "value": 2105 }, { "id": "LinearScale", "value": 1316 }, { "id": "LogScale", "value": 3151 }, { "id": "OrdinalScale", "value": 3770 }, { "id": "QuantileScale", "value": 2435 }, { "id": "QuantitativeScale", "value": 4839 }, { "id": "RootScale", "value": 1756 }, { "id": "Scale", "value": 4268 }, { "id": "ScaleType", "value": 1821 }, { "id": "TimeScale", "value": 5833 }] }] }
+        
+        const data = d3.hierarchy(Origindata).sum((d) => (d.children ? 0 : Math.random()))
         const svg = d3
             .select("#cluster-map")
             .append("svg")
             .attr("preserveAspectRatio", "xMidYMid meet")
             .attr("width", "100%")
             .attr("height", "100%")
-            .attr("viewBox", [0, 0, origin_width, origin_height])
+            .attr("viewBox", [0, 0, origin_width - margin.left - margin.right, origin_height - margin.top - margin.bottom])
             .attr("stroke-width", 2);
 
-        const wallForce = d3ForceLimit()
-            .radius((node) => node.rBounding)
-            .x0(0)
-            .x1(origin_width)
-            .y0(0)
-            .y1(origin_height);
-
-        const simulation = d3
-            .forceSimulation() // 创建一个新的力导向图；
-            .nodes(graph.nodes) // 添加节点
-            .force(
-                //link froce(弹簧模型) 可以根据 link distance 将有关联的两个节点拉近或者推远。力的强度与被链接两个节点的距离成比例，类似弹簧力。
-                "link",
-                d3
-                    .forceLink(graph.links)
-                    .id(function (d) {
-                        //设置或获取link中节点的查找方式
-                        return d.id;
-                    })
-                    // .distance(50)    //设置或获取两个节点之间的距离)
-                    .strength(0)
-            )
-            .force("charge", d3.forceManyBody())
-            .force("center", d3.forceCenter(origin_width / 2, origin_height / 2)) // 添加力学模型并进行仿真，让视图位于区域中心
-            .force("collision", d3.forceCollide((d) => d.rBounding)) //设置节点碰撞半径>= 点半径避免重叠
-            .force("walls", wallForce) // 让节点不超出区域边界，因为边界的限制，会让节点之间重叠
-            .on("tick", update)
-            .on("end", moveToCentroid)
-
-        // voronoi布局
-        // 存储每一个site的顶点
-        const cellLiner = d3.line();
-        // const cellLiner = d3.line().curve(d3.curveBasisClosed);
-        let cells = graph.nodes.map(function (s) {
-            return [];
+        // 绘图内容的形状
+        const upButtonSize = 50, showUpButton = true;
+        const createDispatcher = () => new d3.dispatch(...EVENT_TYPES)
+        const dispatcher = createDispatcher();
+        const createBaseShape = (origin_width, origin_height, upButtonSize, showUpButton) =>
+            showUpButton
+                ? [
+                    [0, upButtonSize],
+                    [upButtonSize, 0],
+                    [origin_width - 1, 0],
+                    [origin_width - 1, origin_height - 1],
+                    [0, origin_height - 1]
+                ]
+                : [
+                    [0, 0],
+                    [origin_width - 1, 0],
+                    [origin_width - 1, origin_height - 1],
+                    [0, origin_height - 1]
+                ]
+        const baseShape = createBaseShape(origin_width, origin_height, upButtonSize, showUpButton);
+        let current = null;
+        const focusParent = () =>{
+            return current.parent ? renderNode(current.parent) : null;
+        }
+        dispatcher.on(EVENT_TYPE_FOCUS, renderNode);
+        document.addEventListener("keyup", ({ code, key }) => {
+            if (code === "ArrowUp" || code === "Escape") {
+                focusParent();
+            }
         });
-        let voronoi = d3WeightedVoronoi() // set the weight accessor
-            .clip([
-                [0, 0],
-                [0, origin_height],
-                [origin_width, origin_height],
-                [origin_width, 0],
-            ]);
-        computeAllCells();
-        redrawAllCells();
+        svg.append("rect")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("id", "map-background")
+            .style("fill", 'white');
+        const voronoi = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        // 向父级返回的按钮
+        if (showUpButton) {
+            const upButton = svg
+                .append("g")
+                .classed("up-button", true)
+                .attr("cursor", "pointer")
+                .on("click", focusParent);
 
-        const link = svg
-            .selectAll(".link")
-            .data(graph.links)
-            .join("line")
-            .attr("stroke", "#1e1e1e")
-            .style("visibility", "hidden")
-        // 外部圆形，表示出集群之间的连接关系
-        const boundingCircle = svg
-            .append("g")
-            .attr("id", "bounding-circle-g")
-            .selectAll("circle")
-            .data(graph.nodes)
-            .join("circle")
-            .attr("class", "bounding-circle")
-            .attr("cx", (d) => d.x)
-            .attr("cy", (d) => d.y)
-            .attr("r", (d) => d.rBounding + innerRadius + 10)
-            .attr("fill", "rgba(204, 204, 204,1)");
+            upButton
+                .append("path")
+                .datum([
+                    [0, 0],
+                    [0, upButtonSize],
+                    [upButtonSize, 0]
+                ])
+                .attr("d", d3.line())
+                .attr("cx", upButtonSize / 2)
+                .attr("cy", upButtonSize / 2)
+                .attr("r", upButtonSize / 2)
+                .attr("fill", "#333333");
 
-        // 绘制圆内部内容
-        const circle = svg
-            .append("g")
-            .attr("id", "circle-g-g")
-            .selectAll("g")
-            .data(graph.nodes)
-            .join("g")
-            .attr("class", "circle-g")
-            .attr("fill", "white")
-            .call(
-                d3
-                    .drag()
-                    .on("start", dragstarted)
-                    .on("drag", dragged)
-                    .on("end", dragended)
-                    .on("start.update drag.update end.update", update)
+            upButton
+                .append("text")
+                .attr("fill", '#fff')
+                .attr("font-size", "1.5emem")
+                .attr("font-weight", "bold")
+                .attr("dx", "0.1em")
+                .attr("dy", "1.1em")
+                .text("UP");
+            upButton.append("title");
+        }
+
+        establishColor(data);
+        const strokeWidthRange = [15, 0.5]
+        const strokeWidth = d3.scalePow().exponent(1.2).range(strokeWidthRange)
+        strokeWidth.domain(d3.extent(data.descendants(), (d) => d.depth));   // 边线的宽度，随深度变化
+        const getId = (d) => d.data.id
+        const isEqual = (a, b) => getId(a) === getId(b)
+
+        const computeRelatedness = (node, score = 1, map = { dummy: 0 }) => {
+            if (!map[getId(node)] && !isEqual(node, current)) {
+                map[getId(node)] = score;
+                computeRelatedness(node.parent, score / 2, map);
+                (node.children || []).forEach((child) =>
+                    computeRelatedness(child, score / 2, map)
+                );
+            }
+            return map;
+        };
+        const opacityFactory = (node) => {
+            const relatednessMap = computeRelatedness(node);
+            const opacityScale = d3
+                .scalePow()
+                .exponent(0.5)
+                .domain(d3.extent(Object.values(relatednessMap)))
+                .range([0.3, 1]);
+
+            return (d) => {
+                const relatedness = relatednessMap[getId(d)];
+                return relatedness ? opacityScale(relatedness) : 0.2;
+            };
+        };
+        //  节点的事件处理函数
+        const onFocus = () => { }, onHover = () => { }
+        const handleHoverEnter = (node, event) => {
+            dispatcher.call(EVENT_TYPE_HOVER_GAIN, this, node);
+            if (!isEqual(node, current)) {
+                onHover(node, event, true);
+                const nodeOpacity = opacityFactory(node);
+                voronoi
+                    .selectAll(".node")
+                    .filter((d) => d.height === 0)
+                    .attr("opacity", 1);
+            }
+        };
+        const handleHoverExit = (node, event) => {
+            onHover(node, event, false);
+            dispatcher.call(EVENT_TYPE_HOVER_LOSE, this);
+            voronoi
+                .selectAll(".node")
+                .filter((d) => d.height === 0)
+                .attr("opacity", 1);
+        };
+        const handleNodeClick = (node) => {
+            const target =
+                node !== current
+                    ? node.ancestors().find((d) => d.depth === current.depth + 1)
+                    : node.parent;
+
+            if (target.height >= minHeight) {
+                renderNode(target);
+            }
+        };
+
+        const colorScale = d3.scaleSequential(d3.interpolateTurbo)
+        const getColor = (d) => colorScale(d.colorValue)
+        const getName = (d) => d.data.name
+        const phase1Duration = 1200, phase2Duration = 500
+        const uuid = () =>
+            ([1e7] + 1e3 + 4e3 + 8e3 + 1e11).replace(/[018]/g, (c) =>
+                (
+                    c ^
+                    (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
+                ).toString(16)
             )
-            .on("click", click)
-            .on('mouseover', function(event, d){
-                let curNode = d.id
-                link._groups[0].forEach(function(linkObj){
-                    let connect = [d3.select(linkObj).data()[0].source.id, d3.select(linkObj).data()[0].target.id]
-                    if(connect.includes(curNode)){
-                        d3.select(linkObj).style("visibility", "visible")
-                    }
-                })
-              })
-              .on("mouseout", () =>{
-                link._groups[0].forEach(function(linkObj){
-                    d3.select(linkObj).style("visibility", "hidden")
-                })
-              })
-
-        // 圆心点
-        circle
-          .append("circle")
-          .attr("cx", 0)
-          .attr("cy", 0)
-          .attr("r", innerRadius-6)
-          .attr("class", "center-point")
-          .attr("id", d => 'node-' + d.id)
-          .attr("fill", "white")
-
-        circle
-          .append("text")
-          .attr("x", 0)
-          .attr("y", 5)
-          .attr("font", "10px sans-serif")
-          .attr("fill", "black")
-          .attr("text-anchor", "middle")
-          .text((d) => d.id)
+        const chartUid = uuid();
+        const createEventName = (name) => [name, chartUid].join(".");
+        const showLabel = (node, current) => {
+            return (
+              node.depth === current.depth + 1 ||
+              (node.height === 0 && current.height === 0)
+            );
+          }
+        
+        // 在区域中心添加文本
+        const appendLabel = (selection, datum, i, getName) => {
+            const { id, href } =uuid("centerline"); // necessary for Firefox
           
+            // if (!datum.label) {
+            //   datum.lable = computeCenterlineLabel({
+            //     label: getName(datum),
+            //     polygon: datum.simplePolygon,
+            //     numPerimeterPoints: 10,
+            //     simplification: 20,
+            //     strategy: "high"
+            //   });
+            // }
+          
+            const { centerline, offset, label, maxFontSize } = datum.lable;
+          
+            const labelG = selection
+              .append("g")
+              .classed("label", true)
+              .style(
+                "font-family",
+                "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;"
+              )
+              .style("font-size", `${maxFontSize * 0.9}px`)
+              .style("font-weight", 500)
+              .style("user-select", "none")
+              .style("letter-spacing", "0em")
+              .style("text-transform", "uppercase")
+              .style("text-shadow", "0 0 5px black")
+              .attr("fill", "white")
+              .attr("pointer-events", "none");
+          
+            labelG
+              .append("path")
+              .attr("id", id)
+              .attr("d", centerline)
+              .attr("visibility", "hidden");
+          
+            labelG
+          
+              .append("text")
+              .attr("dy", "0.35em")
+              .attr("opacity", 0.75)
+              .append("textPath")
+              .attr("xlink:href", href)
+              .attr("startOffset", `${100 * offset}%`)
+              .attr("text-anchor", "middle")
+              .text(d =>d.value.toString().split(".")[1]);
+          }
 
-        const innerArc = d3
-            .arc()
-            .innerRadius(innerRadius - 10)
-            .outerRadius(innerRadius - 1)
-            .startAngle((i) => ((2 * Math.PI) / graph.maxLength) * i - 2)
-            .endAngle((i) => ((2 * Math.PI) / graph.maxLength) * (i + 1) - 2)
-            .cornerRadius(1)
-            .padAngle(0.05);
-        const innerArcG = circle
-            .selectAll("path")
-            .data((d) => d.content)
-            .join("path")
-            .attr("d", (d, i) => innerArc(i))
-            .attr("stroke-width", 0)
-            .attr("fill", (d) => inner_color_map[d]);
+        
+        function renderNode(node) {
+            if (current && isEqual(node, current)) return;
+            dispatcher.call(EVENT_TYPE_FOCUS_GAIN, this, node);
+            if (current) {
+                dispatcher.call(EVENT_TYPE_FOCUS_LOSE, this, current);
+            }
+            onFocus(node);
+            node.each((node) => (node.oldPolygon = node.polygon));
+            if (showUpButton) {
+                const upButton = svg
+                    .select(".up-button")
+                    .attr("cursor", node.depth === 0 ? "not-allowed" : "pointer"); // 如果是顶层，向上返回的按钮则无法点击
+                upButton.select("text").attr("opacity", node.depth === 0 ? 0.5 : 1);
+            }
 
-        innerArcG
-            .append("circle")
-            .attr("cx", (d) => innerArc.centroid(d)[0])
-            .attr("cy", (d) => innerArc.centroid(d)[1])
-            .attr("r", 2)
-            .attr("class", "center-point")
-            .attr("fill", "red");
-        const circleRingG = circle.append('g').attr("class", 'circle-ring-g')
-        // circleRingG.selectAll('circle')
-        //                 .data(d => d.connection)
-        //                 .join("circle")
-        //                 .attr("cx", 0)
-        //                 .attr("cy", 0)
-        //                 .attr("r", (d, i) => innerRadius + ringIncrement*(i))
-        //                 .attr('fill', 'none')
-        //                 .attr('stroke-width', '1px')
-        //                 .attr('stroke', 'yellow')
+            const voronoiTreeMap = d3VoronoiTreemap()
+                .prng(seedrandom("a seed"))
+                .clip(baseShape);
 
-        // 绘制外围bar表示关系
-        const connectionArc = d3.arc()
-            .innerRadius(d => connectionY(0))
-            .outerRadius(d => connectionY(d))
-            .startAngle((d, i) => connectionX(i))
-            .endAngle((d, i) => connectionX(i) + connectionX.bandwidth())
-            .padAngle(0.05)
-            // .padRadius(innerR)
-        const connectionX = d3.scaleBand()
-                            .domain(graph.nodes.map((d, i) => i))
-                            .range([0, 2 * Math.PI])
-                            .align(0)
-        const connectionY = d3.scaleRadial()
-                            .domain([0, graph.maxConnection])
-                            .range([innerRadius+ 1, innerRadius + 10])
-        for(let cluserIndex=0; cluserIndex < graph.nodes.length; cluserIndex++){
-            d3.select(circleRingG._groups[0][cluserIndex]).selectAll("path")
-            .data(graph.nodes[cluserIndex]['connection'])
-            .join("path")
-            .attr("d", connectionArc)
-            .attr('id', (d, i) => 'connection-' + cluserIndex.toString() + '-' + i.toString())
-            .attr('fill', 'red')
-            .attr("stroke", 'red')
-            .attr("value", d => d)
-            .attr("center", connectionArc.centroid)
-            .attr("stroke-width", '1px')
-            .on('mouseover', function(event, d){
-                event.stopPropagation();    // 组织事件传播
-                if(d3.select(this).attr('value') === '0') return 
-                let curConnection = d3.select(this).attr("id").split('-').slice(1, 3)
-                let sourceCenter = d3.select(this).attr('center').split(",").map(parseFloat)
-                let sourceG = d3.select(this.parentNode.parentNode).attr('transform')
-                let sourceGPos = sourceG.substring(sourceG.indexOf("(")+1, sourceG.indexOf(")")).split(",").map(parseFloat)
-                let sourcePos = [sourceCenter[0] + sourceGPos[0], sourceCenter[1] + sourceGPos[1]]
-                let targetObj = d3.select('#connection-' + curConnection[1] + '-' + curConnection[0])
-                let targetCenter = targetObj.attr('center').split(",").map(parseFloat)
-                let targetG = d3.select(targetObj._groups[0][0].parentNode.parentNode).attr('transform')
-                let targetGPos = targetG.substring(targetG.indexOf("(")+1, targetG.indexOf(")")).split(",").map(parseFloat)
-                let targetPos = [targetCenter[0] + targetGPos[0], targetCenter[1] + targetGPos[1]]
-                //创建一个对角线生成器
-                let dx = 20, cpx, cpy;
-                let dy = Math.round(Math.abs( ( ( targetPos[1] - targetPos[0] ) / ( sourcePos[1] - sourcePos[0] ) ) * dx ));
-                //向右上弯曲
-                if(targetPos[1]<sourcePos[1]){
-                    cpx = Math.round(( sourcePos[0] + targetPos[0] ) / 2 + dx);
-                    cpy = Math.round(( sourcePos[1] + targetPos[1] ) / 2 + dy);
-                }else{
-                    cpx = Math.round(( sourcePos[0] + targetPos[0] ) / 2 + dx);
-                    cpy = Math.round(( sourcePos[1] + targetPos[1] ) / 2 + dy);
+            voronoiTreeMap(node);
+            node.each((node) => {
+                const [x0, x1] = d3.extent(node.polygon, (d) => d[0]);
+                const [y0, y1] = d3.extent(node.polygon, (d) => d[1]);
 
+                node.simplePolygon = node.polygon;
+                const width = x1 - x0;
+                const height = y1 - y0;
+                node.polyProps = {
+                    centroid: d3.polygonCentroid(node.simplePolygon),
+                    bounds: [
+                        [x0, y0],
+                        [x1, y1]
+                    ],
+                    width,
+                    height,
+                    aspect: height / width,
+                    max: d3.max([width, height]),
+                    min: d3.min([width, height])
+                };
+                node.polygon = coordinatePolygons(node.oldPolygon, node.polygon);
+            });
+            let nodes = node.descendants().sort((a, b) => b.depth - a.depth);
+            const nodeExit = (selection) => {
+                selection.remove();
+            };
+            voronoi
+                .selectAll(".node")
+                .data(nodes, getId)
+                .join((selection) =>
+                        nodeEnter({
+                            selection,
+                            current: node,
+                            getColor,
+                            getId,
+                            getName,
+                            handleNodeClick,
+                            handleHoverEnter,
+                            handleHoverExit,
+                            phase1Duration,
+                            phase2Duration,
+                            prevouse: current,
+                            strokeWidth,
+                            dispatcher,
+                            createEventName
+                        }),
+                    (selection) =>
+                        nodeUpdate({
+                            selection,
+                            current: node,
+                            getName,
+                            handleHoverEnter,
+                            handleHoverExit,
+                            phase1Duration,
+                            phase2Duration,
+                            strokeWidth,
+                            dispatcher,
+                            createEventName
+                        }),
+                    nodeExit
+                );
+
+            current = node;
+        }
+
+        renderNode(data);
+        
+        const computeAngle = ([x0, y0], [x1, y1]) => {
+            console.log(Math.atan2(y1 - y0, x1 - x0))
+            return Math.atan2(y1 - y0, x1 - x0)
+          }
+        function coordinatePolygons(source, target, pointCount = 20){
+            const expandedPolygon = fixedPointCount(target, pointCount);
+            if (!source || source.length === 0) return expandedPolygon;
+            console.log('sourceCentroid', source, expandedPolygon);
+            const sourceCentroid = computeCentroid(source);
+            const targetCentroid = computeCentroid(expandedPolygon);
+            console.log('sourceCentroid', sourceCentroid);
+            const startTheta = computeAngle(sourceCentroid, source[0]);
+            const pointWidthClosestTheta = expandedPolygon
+                .map((point, i) => ({
+                    theta: Math.abs(computeAngle(targetCentroid, point)),
+                    index: i
+                }))
+                .sort((a, b) => a.theta - b.theta)[0].index;
+
+            const coordinatedPolygon = [
+                ...expandedPolygon.slice(pointWidthClosestTheta),
+                ...expandedPolygon.slice(0, pointWidthClosestTheta)
+            ];
+
+            return d3.polygonArea(source) * d3.polygonArea(coordinatedPolygon) < 0
+                ? coordinatedPolygon.reverse()
+                : coordinatedPolygon;
+        }
+        function delay(ms){
+            return new Promise(resolve=> setTimeout(resolve,ms));
+        }
+        function nodeEnter({
+            selection,
+            current,
+            getColor,
+            getId,
+            getName,
+            handleNodeClick,
+            handleHoverEnter,
+            handleHoverExit,
+            phase1Duration,
+            phase2Duration,
+            previouse,
+            strokeWidth,
+            dispatcher,
+            createEventName
+        }){
+            delay(previouse === null ? 0 : phase1Duration).then(()=>{
+                console.log(551, selection);
+                const all = selection.append("g").classed("node", true);
+                 const t = new d3.transition().duration(phase2Duration);
+                //  const applyLabels = () => {
+                //    all
+                //      .filter((d) => showLabel(d, current))
+                //      .each(function (datum, index) {
+                //        appendLabel(d3.select(this), datum, index, getName);
+                //      });
+           
+                //    all
+                //      .filter((d) => !showLabel(d, current))
+                //      .select(".label")
+                //      .remove();
+                //    dispatcher.call(EVENT_TYPE_ENTER_TRANSITION_COMPLETE, this);
+                //  };
+           
+                //  t.end().then(applyLabels, applyLabels);
+
+                 all
+                   .append("polygon")
+                   .classed("body", true)
+                   .attr("points", (d) => d.polygon)
+                   .attr("fill", (d) => (d.height > 0 ? "none" : getColor(d)))
+                   .attr("stroke", "white")
+                   .attr("stroke-opacity", 1)
+                   .attr("stroke-width", 0)
+                   .attr("stroke-linejoin", "round")
+                   .attr("pointer-events", (d) => (d.height === 0 ? "fill" : "none"))
+                   .attr("stroke-width", (d) => strokeWidth(d.depth));
+           
+                 all
+                   .filter((d) => d.height === 0)
+                   .on(createEventName("click"), (event, node) =>
+                     handleNodeClick(node, event)
+                   )
+                   .on(createEventName("mouseenter"), (event, node) =>
+                     handleHoverEnter(node, event)
+                   )
+                   .on(createEventName("mouseleave"), (event, node) =>
+                     handleHoverExit(node, event)
+                   );
+               })
+        }
+
+        function nodeUpdate({
+            selection,
+            current,
+            getImage,
+            getName,
+            handleHoverEnter,
+            handleHoverExit,
+            phase1Duration,
+            phase2Duration,
+            strokeWidth,
+            dispatcher,
+            createEventName
+        }){
+            const branches = selection
+                .filter((d) => d.height > 0)
+                .attr("visibility", "hidden");
+            const leaves = selection.filter((d) => d.height === 0);
+            const t = d3.transition("update-phase-1").duration(phase1Duration);
+
+            selection.selectAll(".label").remove();
+
+            t.end().then(
+                () => {
+                    branches
+                        .attr("visibility", "visible")
+                        .select("polygon")
+                        .attr("points", (d) => d.polygon)
+                        .transition()
+                        .duration(phase2Duration)
+                        .attr("stroke-width", (d) => strokeWidth(d.depth));
+
+                    // selection
+                    //     .filter((d) => showLabel(d, current))
+                    //     .each(function (datum, index) {
+                    //         appendLabel(d3.select(this), datum, index, getName);
+                    //     });
+
+                    selection
+                        .selectAll(".label")
+                        .filter((d) => !showLabel(d, current))
+                        .remove();
+
+                    leaves
+                        .on(createEventName("mouseenter"), (event, node) =>
+                            handleHoverEnter(node, event)
+                        )
+                        .on(createEventName("mouseleave"), (event, node) =>
+                            handleHoverExit(node, event)
+                        );
+                    dispatcher.call(EVENT_TYPE_UPDATE_TRANSITION_COMPLETE, this);
+                },
+                (reject) => { } //console.error("reject baz", reject)
+            );
+
+            leaves
+                .on(createEventName("mouseenter"), null)
+                .on(createEventName("mouseleave"), null)
+                .attr("opacity", 1)
+                .select(".body")
+                .attr("stroke-width", (d) => strokeWidth(d.depth))
+                .transition(t)
+                .attr("points", (d) => d.polygon);
+        }
+
+        function computeCentroid(shape){
+            return shape.reduce(([xSum, ySum], [x, y]) => [xSum + x, ySum + y], [0, 0])
+                    .map(d => d / shape.length)
+        }
+        function createMeasurablePath(points){
+            return d3
+                .select('svg')
+                .append("path")
+                .datum(points)
+                .attr("d", d3.line())
+                .node()
+        }
+        function computeDistances(coordinates){
+            return coordinates.reduce((distances, coordinate, i) => {
+              const value =
+                i === 0
+                  ? 0
+                  : distances[i - 1] + computeDistance(coordinates[i - 1], coordinate);
+              distances.push(value);
+              return distances;
+            }, []);
+          }
+          function computeDistance(coord1, coord2){
+            var distX = coord2[0] - coord1[0];
+            var distY = coord2[1] - coord1[1];
+            return Math.sqrt(distX * distX + distY * distY);
+          }
+        function fixedPointCount(shape, count){
+            const measurablePath = createMeasurablePath(shape);
+
+            const newPointCount = count - shape.length + 1;
+
+            if (count < 1) return shape;
+
+            const distances = computeDistances(shape);
+            const length = distances[distances.length - 1];
+
+            const distancePoints = distances.map((distance, i) => ({
+                distance,
+                point: shape[i]
+            }));
+
+            const positionScale = d3
+                .scaleLinear()
+                .domain([0, newPointCount - 1])
+                .range([0.001, length]);
+
+            return d3.range(newPointCount).reduce((points, index) => {
+                const position = positionScale(index);
+                while (distancePoints.length > 0 && position > distancePoints[0].distance) {
+                    points.push(distancePoints[0].point);
+                    distancePoints.shift();
                 }
-                var path = d3.path();
-                path.moveTo(sourcePos[0],sourcePos[1]);
-                path.quadraticCurveTo(cpx,cpy,targetPos[0],targetPos[1]);
-                svg.append('path')
-                .attr('d', path.toString())
-                .style('fill','none')
-                .attr('id', 'temp-line')
-                .style('stroke','red')
-                .style('stroke-width','2');  
-                // svg.append('line')
-                //     .attr('id', 'temp-line')
-                //     .attr('x1',sourcePos[0])
-                //     .attr('y1',sourcePos[1])
-                //     .attr('x2',targetPos[0])
-                //     .attr('y2',targetPos[1])
-                //     .attr('stroke', "red")
-                //     .attr('stroke-width', "1.5px")
-            })
-            .on("mouseout", function(){
-                d3.select("#temp-line").remove()
-            })
+                const { x, y } = measurablePath.getPointAtLength(position);
+                points.push([x, y]);
+                return points;
+            }, []);
         }
 
-        function update(type='origin') {
-            circle.attr("transform", (d) => "translate(" + d.x + "," + d.y + ")");
-            boundingCircle
-                .attr("cx", (d) => d.x)
-                .attr("cy", (d) => d.y)
-                .attr("r", (d) => d.rBounding);
-            simulation.force("collision", d3.forceCollide((d) => d.rBounding));
+        // 为节点分配颜色
+        function establishColor(root, domain = [0, 1], getWeight = d => d.value){
+            const _establishColor = (node, domain) => {
+                node.colorDomain = domain;
+                node.colorValue = d3.sum(domain) / 2;
+                if (node.children) {
+                    const sum = d3.sum(node.children.map(getWeight));
+                    const scale = d3
+                        .scaleLinear()
+                        .domain([0, sum])
+                        .range(domain);
 
-            link
-                .attr("x1", (d) => d.source.x)
-                .attr("y1", (d) => d.source.y)
-                .attr("x2", (d) => d.target.x)
-                .attr("y2", (d) => d.target.y)
-            if(type == 'origin'){    // 不是力导向图确定位置之后更改布局
-                computeAllCells();
-                redrawAllCells();
-            }
+                    (node.children || [])
+                        //.sort((a, b) => getWeight(a) - getWeight(b))
+                        .reduce((sum, child) => {
+                            const progress = sum + getWeight(child);
+                            _establishColor(child, [sum, progress].map(scale));
+                            return progress;
+                        }, 0);
+                }
+            };
+
+            _establishColor(root, domain);
         }
 
-        function dragstarted(event, d) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            circle.filter((p) => p === d).attr("stroke", "black");
-        }
-
-        function dragged(event, d) {
-            d.x = event.x;
-            d.y = event.y;
-        }
-
-        function dragended(event, d) {
-            if (!event.active) simulation.alphaTarget(0);
-            d.weight = 0;
-            circle.filter((p) => p === d).attr("stroke", null);
-        }
-
-        function click(event, d) {
-            d.isSelected = !d.isSelected
-            if (d.isSelected) {
-                d.weight = openWeight;
-                d.rBounding = 200;
-                circle.filter((p) => p === d).attr("stroke", "black");
-            } else {
-                d.weight = 0;
-                d.rBounding = 40;
-                circle.filter((p) => p === d).attr("stroke", "");
-            }
-            update();
-        }
-
-        // 绘制voronoi区域
-        function computeAllCells() {
-            cells = voronoi(graph.nodes);
-        }
-        function redrawAllCells() {
-            var cellSelection = svg.selectAll(".cell").data(cells, function (c) {
-                return c.site.originalObject.index;
-            });
-
-            cellSelection
-                .join("path")
-                .attr("fill", "none")
-                .attr("pointer-events", "all")
-                .attr("stroke", "#ccc")
-                .attr("stroke-width", 3)
-                .classed("cell", true)
-                .attr("id", function (d, i) {
-                    return "cell-" + d.site.originalObject.index;
-                })
-                .attr("weight", function (d, i) {
-                    return d.site.originalObject.weight;
-                })
-                .attr("d", function (d) {
-                    return cellLiner(d) + "z";
-                });
-        }
-        // 在初次渲染完成之后将点至于区域的中心
-        function moveToCentroid(){
-            var points = graph.nodes.map((d) => { return [d.x, d.y] })
-            var polygons = [...d3.Delaunay.from(points).voronoi([0, 0, origin_width, origin_height]).cellPolygons()]
-            polygons.forEach((d, i) => {
-                let centroid = d3.polygonCentroid(d)
-                graph.nodes[i].x = centroid[0]
-                graph.nodes[i].y = centroid[1]
-                // circle.attr("transform", "translate(" + centroid[0] + "," + centroid[1] + ")")
-                // d3.select(circle._groups[0][i]).attr("transform", "translate(" + centroid[0] + "," + centroid[1] + ")")
-                // d3.select(boundingCircle._groups[0][i]).attr('cx',  centroid[0]).attr('cy',  centroid[1])
-                // link
-                // .attr("x1", (d) => d.source.x)
-                // .attr("y1", (d) => d.source.y)
-                // .attr("x2", (d) => d.target.x)
-                // .attr("y2", (d) => d.target.y);
-
-                update()   // 微调布局
-                // update("centroid")   // 不微调布局
-            });
-        }
-
-
-
-        // 视图缩放
-        // let zoomHandler = d3.zoom().on("zoom", zoomAction);
-        // function zoomAction(event) {
-        //   svg.attr(
-        //     "transform",
-        //     `translate(${origin_width + event.transform.x}, ${
-        //       origin_height + event.transform.y
-        //     })` +
-        //       "scale(" +
-        //       event.transform.k +
-        //       ")"
-        //   );
-        // }
-        // zoomHandler(svg);
-    };
+    }
 
     return (
-        // <div id="cluster-container" style={{ width:1000, height: 500 }}>
-        // <div id="cluster-map" style={{ width: width, height: height }}></div>
         <div
             id="cluster-map"
             style={{ width: "100%", height: "100%" }}
             ref={resizeRef}
         ></div>
-        // </div>
     );
 };
 
