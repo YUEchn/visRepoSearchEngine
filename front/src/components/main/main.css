@@ -47,10 +47,11 @@
 
 #time-filter{
     width: 50vw;
-    /* height: 100%; */
+    height: 3vh;
     /* float: left; */
+    display: flex;
     padding-left: 10px;
-    background-color: rgb(156, 220, 218);
+    /* background-color: rgb(156, 220, 218); */
 }
 :where(.css-dev-only-do-not-override-acm2ia).ant-btn-primary{
     background-color: gray;

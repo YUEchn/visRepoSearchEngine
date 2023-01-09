@@ -4,7 +4,7 @@ import axios from "axios";
 import { getResult, testConnect } from "../../apis/api";
 import React, { useEffect, useState } from "react";
 import { Input } from "antd";
-import { Layout, Model, TabNode, IJsonModel } from "flexlayout-react";
+import { Layout, Model, TabNode, IJsonModel, Actions } from "flexlayout-react";
 import ResultList from "../views/resultList";
 import SimilarRepos from "../views/similarRepos";
 import RelevantRepos from "../views/revelantRepos";
@@ -15,11 +15,12 @@ const { Search } = Input;
 
 const Main = () => {
   const [init, setInit] = useState(false);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState("11");
   const [result, setResult] = useState([]);
   const [loading, setLoading] = useState(false);
   // const [isSelect, setIsSelect] = useState(false)
   const [selectRepo, setSelectRepo] = useState("");
+  const [maximize, setMaximize] = useState(false);
 
   // 布局的配置
   const configModel = {
@@ -40,6 +41,7 @@ const Main = () => {
                 {
                   type: "tabset",
                   weight: 100,
+                  // id: "cluster-tabset",
                   children: [
                     {
                       type: "tab",
@@ -89,7 +91,7 @@ const Main = () => {
           />
         );
       case "cluster-view":
-        return <ClusterView />;
+        return <ClusterView maximize={maximize}/>;
       case "relevant-repos":
         return <RelevantRepos />;
       case "similar-repos":
@@ -111,6 +113,7 @@ const Main = () => {
         setSelectRepo('aaaa')
       } else {
         flexObj[0].style.left = "0";
+        setMaximize('width')
       }
     }
   }, [query]);
@@ -168,7 +171,14 @@ const Main = () => {
               ></ResultList>
             </div>
         )}
-        <Layout model={model} factory={factory} />
+        <Layout 
+          model={model} 
+          factory={factory} 
+          icons={{
+            maximize: <>&#128470;&#xFE0E;</>,
+            restore: <>&#128469;&#xFE0E;</>
+          }}
+          />
         {selectRepo && (
           <>
           <div id='close-button-div'>
