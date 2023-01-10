@@ -102,7 +102,7 @@ const ClusterView = ({ maximum }) => {
         },
         {
           id: 1,
-          "type": "cluster",
+          type: "cluster",
           value: 3938,
           content: [0, 2],
           connection: [4, 0, 7, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -131,7 +131,7 @@ const ClusterView = ({ maximum }) => {
         },
         {
           id: 2,
-          "type": "cluster",
+          type: "cluster",
           value: 840,
           content: [2, 0],
           connection: [5, 7, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -144,7 +144,7 @@ const ClusterView = ({ maximum }) => {
         },
         {
           id: 3,
-          "type": "cluster",
+          type: "cluster",
           value: 212,
           content: [0, 1, 2],
           connection: [0, 4, 10, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -161,7 +161,7 @@ const ClusterView = ({ maximum }) => {
         },
         {
           id: 4,
-          "type": "cluster",
+          type: "cluster",
           value: 7074,
           content: [0],
           connection: [0, 0, 0, 6, 0, 8, 0, 0, 0, 5, 0, 0, 0],
@@ -186,7 +186,7 @@ const ClusterView = ({ maximum }) => {
         },
         {
           id: 5,
-          "type": "cluster",
+          type: "cluster",
           value: 938,
           content: [1],
           connection: [0, 0, 0, 0, 8, 0, 4, 0, 0, 0, 0, 0, 0],
@@ -219,7 +219,7 @@ const ClusterView = ({ maximum }) => {
         },
         {
           id: 6,
-          "type": "cluster",
+          type: "cluster",
           value: 740,
           content: [0, 1, 2],
           connection: [0, 0, 0, 0, 0, 4, 0, 1, 3, 0, 0, 0, 0],
@@ -240,7 +240,7 @@ const ClusterView = ({ maximum }) => {
         },
         {
           id: 7,
-          "type": "cluster",
+          type: "cluster",
           value: 212,
           content: [2],
           connection: [0, 0, 0, 0, 0, 0, 1, 0, 8, 0, 0, 0, 0],
@@ -273,7 +273,7 @@ const ClusterView = ({ maximum }) => {
         },
         {
           id: 8,
-          "type": "cluster",
+          type: "cluster",
           value: 7074,
           content: [0, 1, 2],
           connection: [0, 0, 0, 0, 0, 0, 3, 8, 0, 0, 0, 0, 0],
@@ -302,7 +302,7 @@ const ClusterView = ({ maximum }) => {
         },
         {
           id: 9,
-          "type": "cluster",
+          type: "cluster",
           value: 3938,
           content: [1, 2],
           connection: [0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 7, 3, 0],
@@ -327,7 +327,7 @@ const ClusterView = ({ maximum }) => {
         },
         {
           id: 10,
-          "type": "cluster",
+          type: "cluster",
           value: 6840,
           content: [2, 1],
           connection: [0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 4, 2],
@@ -348,7 +348,7 @@ const ClusterView = ({ maximum }) => {
         },
         {
           id: 11,
-          "type": "cluster",
+          type: "cluster",
           value: 212,
           content: [0, 2, 1],
           connection: [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 0, 8],
@@ -377,7 +377,7 @@ const ClusterView = ({ maximum }) => {
         },
         {
           id: 12,
-          "type": "cluster",
+          type: "cluster",
           value: 656,
           content: [0, 2, 1],
           connection: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -400,7 +400,7 @@ const ClusterView = ({ maximum }) => {
     };
 
     const data = d3.hierarchy(Origindata).sum((d) => {
-      if (d.type === 'cluster') {
+      if (d.type === "cluster") {
         cluster_arr.push(d.id);
       }
       return d.children ? 0 : d.value;
@@ -432,18 +432,18 @@ const ClusterView = ({ maximum }) => {
     ) =>
       showUpButton
         ? [
-            [0, upButtonSize],
-            [upButtonSize, 0],
-            [originWidth - 1, 0],
-            [originWidth - 1, originHeight - 1],
-            [0, originHeight - 1],
-          ]
+          [0, upButtonSize],
+          [upButtonSize, 0],
+          [originWidth - 1, 0],
+          [originWidth - 1, originHeight - 1],
+          [0, originHeight - 1],
+        ]
         : [
-            [0, 0],
-            [originWidth - 1, 0],
-            [originWidth - 1, originHeight - 1],
-            [0, originHeight - 1],
-          ];
+          [0, 0],
+          [originWidth - 1, 0],
+          [originWidth - 1, originHeight - 1],
+          [0, originHeight - 1],
+        ];
     const baseShape = createBaseShape(
       originWidth,
       originHeight,
@@ -538,8 +538,8 @@ const ClusterView = ({ maximum }) => {
       };
     };
     //  节点的事件处理函数
-    const onFocus = () => {},
-      onHover = () => {};
+    const onFocus = () => { },
+      onHover = () => { };
     const handleHoverEnter = (node, event) => {
       dispatcher.call(EVENT_TYPE_HOVER_GAIN, this, node);
       if (!isEqual(node, current)) {
@@ -665,7 +665,7 @@ const ClusterView = ({ maximum }) => {
         const [y0, y1] = d3.extent(node.polygon, (d) => d[1]);
 
         node.simplePolygon = node.polygon;
-       
+
         const width = x1 - x0;
         const height = y1 - y0;
         node.polyProps = {
@@ -679,7 +679,11 @@ const ClusterView = ({ maximum }) => {
           aspect: height / width,
           max: d3.max([width, height]),
           min: d3.min([width, height]),
-          maxRadius: polygonMaxRadius(node.simplePolygon, d3.polygonCentroid(node.simplePolygon))
+          maxRadius: polygonMaxRadius(
+            node.simplePolygon,
+            d3.polygonCentroid(node.simplePolygon),
+            strokeWidth(node.depth)
+          ),
         };
         node.polygon = coordinatePolygons(node.oldPolygon, node.polygon);
       });
@@ -757,14 +761,6 @@ const ClusterView = ({ maximum }) => {
         //  };
 
         //  t.end().then(applyLabels, applyLabels);
-        const hexbin = d3Hexbin()
-          .x((d) => d.x)
-          .y((d) => d.y)
-          .radius(5)
-          .extent([
-            [0, 0],
-            [originWidth, originHeight],
-          ]);
 
         all
           .append("polygon")
@@ -777,12 +773,14 @@ const ClusterView = ({ maximum }) => {
           .attr("stroke-linejoin", "round")
           .attr("pointer-events", (d) => (d.height === 0 ? "fill" : "none"))
           .attr("stroke-width", (d) => strokeWidth(d.depth));
-        // all.selectAll(".hexagon")
-        //    .data(d => d.polygon)
-        //    join()
+
+        
+        const relationR = 0.85;
+        const matchR = 0.8; // 词云所占据的区域比例
+        const wordCloudR = 0.77;
 
         const innerCirle = all
-          .filter((d) => d.depth === 1)
+          .filter((d) => d.depth === 1) // 只在第一次分层下面绘制点
           .append("g")
           .attr(
             "transform",
@@ -811,7 +809,7 @@ const ClusterView = ({ maximum }) => {
                   Math.abs(
                     ((targetPos[1] - targetPos[0]) /
                       (sourcePos[1] - sourcePos[0])) *
-                      dx
+                    dx
                   )
                 );
                 //向右上弯曲
@@ -839,145 +837,167 @@ const ClusterView = ({ maximum }) => {
             d3.selectAll(".node-to-node").remove(); // 移除节点之间的所有连接
           });
 
-        // 圆心点
+        // 整个内部圆区域
         innerCirle
           .append("circle")
           .attr("cx", 0)
           .attr("cy", 0)
-          .attr("r", innerRadius - 6)
+          .attr("r", (d) => d.polyProps.maxRadius)
           .attr("class", "center-point")
           .attr("id", (d) => "node-" + d.data.id)
-          .attr("fill", "yellow");
+          .attr("fill", "rgba(255, 255, 255, 0.5)");
+
+        // 圆中心的编号
         innerCirle
           .append("text")
           .attr("x", 0)
           .attr("y", 5)
-          .attr("font", "10px sans-serif")
+          .attr("font", "1em sans-serif")
           .attr("fill", "black")
           .attr("text-anchor", "middle")
           .text((d) => d.data.id);
+        // 表示匹配特征的圆环
         const innerArc = d3
           .arc()
-          .innerRadius(innerRadius - 5)
-          .outerRadius(innerRadius - 1)
+          .innerRadius((i, maxRadius) => maxRadius*matchR )
+          .outerRadius((i, maxRadius) => maxRadius*relationR-1)
           .startAngle((i) => ((2 * Math.PI) / data.data.maxLength) * i - 2)
           .endAngle((i) => ((2 * Math.PI) / data.data.maxLength) * (i + 1) - 2)
           .cornerRadius(1)
           .padAngle(0.05);
-        const innerArcPath = innerCirle
+        innerCirle
           .selectAll("path")
           .data((d) => d.data.content)
           .join("path")
-          .attr("d", (d, i) => innerArc(i))
+          .attr("d", function(d, i){
+            let curMaxRadius = d3.select(this.parentNode)._groups[0][0].__data__.polyProps.maxRadius
+
+            return innerArc(i, curMaxRadius)
+          })
           .attr("stroke-width", "1")
           .attr("fill", (d) => inner_color_map[d]);
 
-        // 绘制外围bar表示关系
+        // 表示连接关系的外部bar
         const circleRingG = innerCirle
           .append("g")
           .attr("class", "circle-ring-g");
-        const connectionArc = d3
-          .arc()
-          .innerRadius((d) => connectionY(0))
-          .outerRadius((d) => connectionY(d))
-          .startAngle((d, i) => connectionX(i))
-          .endAngle((d, i) => connectionX(i) + connectionX.bandwidth())
-          .padAngle(0.1)
-          .cornerRadius(2);
+
         const connectionX = d3
           .scaleBand()
           .domain(cluster_arr.map((d, i) => i))
           .range([0, 2 * Math.PI])
           .align(0);
-        const connectionY = d3
-          .scaleRadial()
-          .domain([0, data.data.maxConnection]) // 连接的最大权重
-          .range([innerRadius + 1, innerRadius + 10]);
-        circleRingG
-          .selectAll("path")
-          .data((d) => d.data.connection)
-          .join("path")
-          .attr("d", connectionArc)
-          .attr("id", function (d, i) {
-            let curCluster = d3.select(this.parentNode)._groups[0][0].__data__
-              .data.id;
-            return "connection-" + curCluster.toString() + "-" + i.toString();
-          })
-          .attr("fill", "rgba(255, 255, 255, 1)")
-          .attr("stroke", "rgba(255, 255, 255, 1)")
-          .attr("value", (d) => d)
-          .attr("center", connectionArc.centroid)
-          .attr("stroke-width", "1px")
-          .on("mouseover", function (event, d) {
-            if (
-              d3.select(this.parentNode.parentNode).style("visibility") ===
-              "hidden"
-            )
-              return;
-            event.stopPropagation(); // 组织事件传播
-            if (d3.select(this).attr("value") === "0") return;
-            let curConnection = d3
-              .select(this)
-              .attr("id")
-              .split("-")
-              .slice(1, 3);
-            let sourceG = d3.select(this.parentNode)._groups[0][0].__data__
-              .polyProps.centroid;
-            let sourceCenter = d3
-              .select(this)
-              .attr("center")
-              .split(",")
-              .map(parseFloat);
-            let sourcePos = [
-              sourceCenter[0] + sourceG[0],
-              sourceCenter[1] + sourceG[1],
-            ];
-            let targetObj = d3.select(
-              "#connection-" + curConnection[1] + "-" + curConnection[0]
-            );
-            let targetCenter = targetObj
-              .attr("center")
-              .split(",")
-              .map(parseFloat);
-            let targetG = d3.select(targetObj._groups[0][0].parentNode)
-              ._groups[0][0].__data__.polyProps.centroid;
-            let targetPos = [
-              targetCenter[0] + targetG[0],
-              targetCenter[1] + targetG[1],
-            ];
-            //创建一个对角线生成器
-            let dx = 20,
-              cpx,
-              cpy;
-            let dy = Math.round(
-              Math.abs(
-                ((targetPos[1] - targetPos[0]) /
-                  (sourcePos[1] - sourcePos[0])) *
-                  dx
+        for (let i = 0; i < circleRingG._groups[0].length; i++) {
+          // 当前圆的半径
+          let curMaxRadius = d3.select(circleRingG._groups[0][i])._groups[0][0].__data__.polyProps.maxRadius
+          let y = d3
+            .scaleRadial()
+            .domain([0, data.data.maxConnection]) // 连接的最大权重
+            .range([curMaxRadius * relationR, curMaxRadius]);
+          let connectionArc = d3
+            .arc()
+            .innerRadius((d) => y(0))
+            .outerRadius((d) => y(d))
+            .startAngle((d, i) => connectionX(i))
+            .endAngle((d, i) => connectionX(i) + connectionX.bandwidth())
+            .padAngle(0.1)
+            .cornerRadius(2);
+          d3.select(circleRingG._groups[0][i])
+            .selectAll("path")
+            .data((d) => d.data.connection)
+            .join("path")
+            .attr("d", connectionArc)
+            .attr("id", function (d, i) {
+              let curCluster = d3.select(this.parentNode)._groups[0][0].__data__
+                .data.id;
+              return "connection-" + curCluster.toString() + "-" + i.toString();
+            })
+            .attr("fill", "rgba(255, 255, 255, 1)")
+            .attr("stroke", "rgba(255, 255, 255, 1)")
+            .attr("value", (d) => d)
+            .attr("center", connectionArc.centroid) // 每个关系圆弧的中心
+            .attr("stroke-width", "1px")
+            .on("mouseover", function (event, d) {
+              if (
+                d3.select(this.parentNode.parentNode).style("visibility") ===
+                "hidden"
               )
-            );
-            //向右上弯曲
-            if (targetPos[1] < sourcePos[1]) {
-              cpx = Math.round((sourcePos[0] + targetPos[0]) / 2 + dx);
-              cpy = Math.round((sourcePos[1] + targetPos[1]) / 2 + dy);
-            } else {
-              cpx = Math.round((sourcePos[0] + targetPos[0]) / 2 + dx);
-              cpy = Math.round((sourcePos[1] + targetPos[1]) / 2 + dy);
-            }
-            let path = d3.path();
-            path.moveTo(sourcePos[0], sourcePos[1]);
-            path.quadraticCurveTo(cpx, cpy, targetPos[0], targetPos[1]);
-            svg
-              .append("path")
-              .attr("d", path.toString())
-              .style("fill", "none")
-              .attr("id", "temp-line")
-              .style("stroke", "rgba(55, 55, 61, 0.5)")
-              .style("stroke-width", "2");
-          })
-          .on("mouseout", function () {
-            d3.select("#temp-line").remove();
-          });
+                return;
+              event.stopPropagation(); // 组织事件传播
+              if (d3.select(this).attr("value") === "0") return;
+              let curConnection = d3
+                .select(this)
+                .attr("id")
+                .split("-")
+                .slice(1, 3);
+              let sourceG = d3.select(this.parentNode)._groups[0][0].__data__
+                .polyProps.centroid;
+              let sourceCenter = d3
+                .select(this)
+                .attr("center")
+                .split(",")
+                .map(parseFloat);
+              let sourcePos = [
+                sourceCenter[0] + sourceG[0],
+                sourceCenter[1] + sourceG[1],
+              ];
+              let targetObj = d3.select(
+                "#connection-" + curConnection[1] + "-" + curConnection[0]
+              );
+              let targetCenter = targetObj
+                .attr("center")
+                .split(",")
+                .map(parseFloat);
+              let targetG = d3.select(targetObj._groups[0][0].parentNode)
+                ._groups[0][0].__data__.polyProps.centroid;
+              let targetPos = [
+                targetCenter[0] + targetG[0],
+                targetCenter[1] + targetG[1],
+              ];
+              //创建一个对角线生成器
+              let dx = 20,
+                cpx,
+                cpy;
+              let dy = Math.round(
+                Math.abs(
+                  ((targetPos[1] - targetPos[0]) /
+                    (sourcePos[1] - sourcePos[0])) *
+                  dx
+                )
+              );
+              //向右上弯曲
+              if (targetPos[1] < sourcePos[1]) {
+                cpx = Math.round((sourcePos[0] + targetPos[0]) / 2 + dx);
+                cpy = Math.round((sourcePos[1] + targetPos[1]) / 2 + dy);
+              } else {
+                cpx = Math.round((sourcePos[0] + targetPos[0]) / 2 + dx);
+                cpy = Math.round((sourcePos[1] + targetPos[1]) / 2 + dy);
+              }
+              let path = d3.path();
+              path.moveTo(sourcePos[0], sourcePos[1]);
+              path.quadraticCurveTo(cpx, cpy, targetPos[0], targetPos[1]);
+              svg
+                .append("path")
+                .attr("d", path.toString())
+                .style("fill", "none")
+                .attr("id", "temp-line")
+                .style("stroke", "rgba(55, 55, 61, 0.5)")
+                .style("stroke-width", "2");
+            })
+            .on("mouseout", function () {
+              d3.select("#temp-line").remove();
+            });
+        }
+
+         // 内部词云
+         const wordclousG = innerCirle
+         .append("g")
+         .attr("class", "wordcloud-g")
+         .append('circle')
+         .attr('cx', 0)
+         .attr('cy', 0)
+         .attr('r', d => d.polyProps.maxRadius*wordCloudR)
+         .attr('fill', 'pink')
 
         all
           .filter((d) => d.height === 0)
@@ -1063,7 +1083,7 @@ const ClusterView = ({ maximum }) => {
           i === 0
             ? 0
             : distances[i - 1] +
-              computeDistance(coordinates[i - 1], coordinate);
+            computeDistance(coordinates[i - 1], coordinate);
         distances.push(value);
         return distances;
       }, []);
@@ -1114,7 +1134,7 @@ const ClusterView = ({ maximum }) => {
         node.colorDomain = domain;
         node.colorValue = d3.sum(domain) / 2;
         if (node.children) {
-          const sum = d3.sum(node.children.map(getWeight));   // 根据value确定颜色深浅
+          const sum = d3.sum(node.children.map(getWeight)); // 根据value确定颜色深浅
           const scale = d3.scaleLinear().domain([0, sum]).range(domain);
 
           (node.children || [])
@@ -1131,51 +1151,69 @@ const ClusterView = ({ maximum }) => {
   };
 
   // 计算多边形内的近似最大圆半径
-  function polygonMaxRadius(polygon, center){
-    let maxRadius = 0;
-    for(let p=0; p< polygon.length; p++){
-        if(p == polygon.length - 1){   // 最后一个点
-            maxRadius = Math.max(maxRadius, distance(center[0], center[1], polygon[p][0], polygon[p][1], polygon[0][0], polygon[0][1]))
-        }
-        else{
-            maxRadius = Math.max(maxRadius, distance(center[0], center[1], polygon[p][0], polygon[p][1], polygon[p+1][0], polygon[p+1][1]))
-        }
+  function polygonMaxRadius(polygon, center, strokeWidth) {
+    let minRadius = 99999;
+    for (let p = 0; p < polygon.length; p++) {
+      if (p == polygon.length - 1) {
+        // 最后一个点
+        minRadius = Math.min(
+          minRadius,
+          distance(
+            center[0],
+            center[1],
+            polygon[p][0],
+            polygon[p][1],
+            polygon[0][0],
+            polygon[0][1]
+          )
+        );
+      } else {
+        minRadius = Math.min(
+          minRadius,
+          distance(
+            center[0],
+            center[1],
+            polygon[p][0],
+            polygon[p][1],
+            polygon[p + 1][0],
+            polygon[p + 1][1]
+          )
+        );
       }
-
-    function distance(x, y, x1, y1, x2, y2){
-        var A = x - x1;
-        var B = y - y1;
-        var C = x2 - x1;
-        var D = y2 - y1;
-      
-        var dot = A * C + B * D;
-        var len_sq = C * C + D * D;
-        var param = -1;
-        if (len_sq != 0) //in case of 0 length line
-            param = dot / len_sq;
-      
-        var xx, yy;
-      
-        if (param < 0) {
-          xx = x1;
-          yy = y1;
-        }
-        else if (param > 1) {
-          xx = x2;
-          yy = y2;
-        }
-        else {
-          xx = x1 + param * C;
-          yy = y1 + param * D;
-        }
-      
-        var dx = x - xx;
-        var dy = y - yy;
-        return Math.floor(Math.sqrt(dx * dx + dy * dy));
     }
 
-    return maxRadius
+    function distance(x, y, x1, y1, x2, y2) {
+      var A = x - x1;
+      var B = y - y1;
+      var C = x2 - x1;
+      var D = y2 - y1;
 
+      var dot = A * C + B * D;
+      var len_sq = C * C + D * D;
+      var param = -1;
+      if (len_sq != 0)
+        //in case of 0 length line
+        param = dot / len_sq;
+
+      var xx, yy;
+
+      if (param < 0) {
+        xx = x1;
+        yy = y1;
+      } else if (param > 1) {
+        xx = x2;
+        yy = y2;
+      } else {
+        xx = x1 + param * C;
+        yy = y1 + param * D;
+      }
+
+      var dx = x - xx;
+      var dy = y - yy;
+      return Math.floor(Math.sqrt(dx * dx + dy * dy));
+    }
+
+    return Math.floor(minRadius - strokeWidth);
   }
 
   return (
