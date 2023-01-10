@@ -665,6 +665,7 @@ const ClusterView = ({ maximum }) => {
         const [y0, y1] = d3.extent(node.polygon, (d) => d[1]);
 
         node.simplePolygon = node.polygon;
+       
         const width = x1 - x0;
         const height = y1 - y0;
         node.polyProps = {
@@ -678,6 +679,7 @@ const ClusterView = ({ maximum }) => {
           aspect: height / width,
           max: d3.max([width, height]),
           min: d3.min([width, height]),
+          maxRadius: polygonMaxRadius(node.simplePolygon, d3.polygonCentroid(node.simplePolygon))
         };
         node.polygon = coordinatePolygons(node.oldPolygon, node.polygon);
       });
@@ -708,10 +710,12 @@ const ClusterView = ({ maximum }) => {
 
     renderNode(data);
 
+    console.log(data);
+
     const computeAngle = ([x0, y0], [x1, y1]) => {
       return Math.atan2(y1 - y0, x1 - x0);
     };
-    function coordinatePolygons(source, target, pointCount = 2000) {
+    function coordinatePolygons(source, target, pointCount = 20) {
       const expandedPolygon = fixedPointCount(target, pointCount);
       if (!source || source.length === 0) return expandedPolygon;
       const sourceCentroid = computeCentroid(source);
@@ -1125,6 +1129,54 @@ const ClusterView = ({ maximum }) => {
       _establishColor(root, domain);
     }
   };
+
+  // 计算多边形内的近似最大圆半径
+  function polygonMaxRadius(polygon, center){
+    let maxRadius = 0;
+    for(let p=0; p< polygon.length; p++){
+        if(p == polygon.length - 1){   // 最后一个点
+            maxRadius = Math.max(maxRadius, distance(center[0], center[1], polygon[p][0], polygon[p][1], polygon[0][0], polygon[0][1]))
+        }
+        else{
+            maxRadius = Math.max(maxRadius, distance(center[0], center[1], polygon[p][0], polygon[p][1], polygon[p+1][0], polygon[p+1][1]))
+        }
+      }
+
+    function distance(x, y, x1, y1, x2, y2){
+        var A = x - x1;
+        var B = y - y1;
+        var C = x2 - x1;
+        var D = y2 - y1;
+      
+        var dot = A * C + B * D;
+        var len_sq = C * C + D * D;
+        var param = -1;
+        if (len_sq != 0) //in case of 0 length line
+            param = dot / len_sq;
+      
+        var xx, yy;
+      
+        if (param < 0) {
+          xx = x1;
+          yy = y1;
+        }
+        else if (param > 1) {
+          xx = x2;
+          yy = y2;
+        }
+        else {
+          xx = x1 + param * C;
+          yy = y1 + param * D;
+        }
+      
+        var dx = x - xx;
+        var dy = y - yy;
+        return Math.floor(Math.sqrt(dx * dx + dy * dy));
+    }
+
+    return maxRadius
+
+  }
 
   return (
     <div
