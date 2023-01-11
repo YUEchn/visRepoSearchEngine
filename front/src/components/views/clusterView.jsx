@@ -4,6 +4,7 @@ import * as seedrandom from "seedrandom";
 import { voronoiTreemap as d3VoronoiTreemap } from "d3-voronoi-treemap";
 import * as d3Cloud from "d3-cloud";
 import "./css/clusterView.css";
+import ClusterTopics from "./clusterTopics";
 // import { hexgrid as d3Hexgrid } from "d3-hexgrid";
 // import { hexbin as d3Hexbin } from "d3-hexbin";
 // 首先根据力导向图生成布局
@@ -21,19 +22,20 @@ const inner_color_map = {
   6: "#b3b3b3",
   7: "#e78ac3",
 };
-const ClusterView = ({ maximum }) => {
+const ClusterView = () => {
   const [init, setInit] = useState(false);
+  const [clusterHovering, setClusterHovering] = useState(-1); // 当前聚类视图中滚动条正放置的元素
   const resizeRef = useRef(null);
 
   useEffect(() => {
     setInit(true);
   }, []);
 
-  useEffect(() => {
-    if (init && (originHeight !== 0 || originWidth !== 0)) {
-      drawMap();
-    }
-  }, [maximum]);
+  // useEffect(() => {
+  //   if (init && (originHeight !== 0 || originWidth !== 0)) {
+  //     drawMap();
+  //   }
+  // }, [maximum]);
   useEffect(() => {
     if (init) {
       originWidth = Math.floor(resizeRef.current.offsetWidth) * 0.9; // 初始化
@@ -486,13 +488,12 @@ const ClusterView = ({ maximum }) => {
     );
     let current = null;
     const focusParent = () => {
-      if (current.parent && current.height!== 0) {
+      if (current.parent && current.height !== 0) {
         // 当前是第二层
-        delay(phase1Duration).then(() =>{
+        delay(phase1Duration).then(() => {
           console.log(current.height);
-          d3.selectAll(".circle-g").style("visibility", "visible")
-        }
-        );
+          d3.selectAll(".circle-g").style("visibility", "visible");
+        });
       }
       return current.parent ? renderNode(current.parent) : null;
     };
@@ -601,7 +602,8 @@ const ClusterView = ({ maximum }) => {
           ? node.ancestors().find((d) => d.depth === current.depth + 1)
           : node.parent;
 
-      if (target.height > minHeight) {    // 最后一层不进入
+      if (target.height > minHeight) {
+        // 最后一层不进入
         renderNode(target);
       }
     };
@@ -804,7 +806,7 @@ const ClusterView = ({ maximum }) => {
           .attr("fill", (d) => (d.height > 0 ? "none" : getColor(d)))
           .attr("stroke", "white")
           .attr("stroke-opacity", 1)
-          .attr("value", d => d.children ? d.children.length : d.data.value)
+          .attr("value", (d) => (d.children ? d.children.length : d.data.value))
           .attr("stroke-width", 0)
           .attr("stroke-linejoin", "round")
           .attr("pointer-events", (d) => (d.height === 0 ? "fill" : "none"))
@@ -867,9 +869,12 @@ const ClusterView = ({ maximum }) => {
                   .style("stroke-width", "2");
               }
             });
+            console.log(d.data.id);
+            setClusterHovering(d.data.id); // 当前选择的集群的id: 数字
           })
           .on("mouseout", function (event, d) {
             d3.selectAll(".node-to-node").remove(); // 移除节点之间的所有连接
+            setClusterHovering(-1); // 重置选择的集群的id: 数字
           });
 
         // 整个内部圆区域
@@ -1066,23 +1071,19 @@ const ClusterView = ({ maximum }) => {
               value: 6,
             },
           ];
-          let tt = '1111;23232;3321321;132321312;13213213;'
-          let fontSize = curMaxRadius/(tt.split(';').length*9.9)   // 根据当前圆的半径和包含的主题数量确定文本的大小
+          let tt = "1111;23232;3321321;132321312;13213213;";
+          let fontSize = curMaxRadius / (tt.split(";").length * 9.9); // 根据当前圆的半径和包含的主题数量确定文本的大小
           d3.select(wordclousG._groups[0][i])
-          .append('text')
-          .attr('font-size', `${fontSize}em`)
-          .style('text-anchor', 'middle')
-          .selectAll('tspan')
-          .data(d => lines(words(tt)))
-          .join('tspan')
-          .attr("x", 0)
-          .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.9}em`)
-          .text(d => d.text ); 
-
+            .append("text")
+            .attr("font-size", `${fontSize}em`)
+            .style("text-anchor", "middle")
+            .selectAll("tspan")
+            .data((d) => lines(words(tt)))
+            .join("tspan")
+            .attr("x", 0)
+            .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.9}em`)
+            .text((d) => d.text);
         }
-
-
-
 
         all
           .filter((d) => d.height === 0)
@@ -1302,42 +1303,52 @@ const ClusterView = ({ maximum }) => {
   }
 
   function words(text) {
-    const words = text.split(';'); // To hyphenate: /\s+|(?<=-)/
+    const words = text.split(";"); // To hyphenate: /\s+|(?<=-)/
     if (!words[words.length - 1]) words.pop();
     if (!words[0]) words.shift();
     return words;
   }
-  function lines(words){
+  function lines(words) {
     let line;
     let lineWidth0 = Infinity;
     const lines = [];
     for (let i = 0, n = words.length; i < n; ++i) {
       let lineText1 = (line ? line.text + " " : "") + words[i];
       let lineWidth1 = measureWidth(lineText1);
-      if ((lineWidth0 + lineWidth1) / 2 < Math.sqrt(measureWidth(words.join(" ").trim()) * 18) ) {
+      if (
+        (lineWidth0 + lineWidth1) / 2 <
+        Math.sqrt(measureWidth(words.join(" ").trim()) * 18)
+      ) {
         line.width = lineWidth0 = lineWidth1;
         line.text = lineText1;
       } else {
         lineWidth0 = measureWidth(words[i]);
-        line = {width: lineWidth0, text: words[i]};
+        line = { width: lineWidth0, text: words[i] };
         lines.push(line);
       }
     }
     return lines;
   }
-  function measureWidth(){
+  function measureWidth() {
     const context = document.createElement("canvas").getContext("2d");
-    return text => context.measureText(text).width;
+    return (text) => context.measureText(text).width;
   }
 
-
-
   return (
-    <div
-      id="cluster-map"
-      style={{ width: "100%", height: "100%" }}
-      ref={resizeRef}
-    ></div>
+    <>
+      <div
+        id="cluster-map"
+        style={{ width: "80%", height: "100%", float: "left" }}
+        ref={resizeRef}
+      ></div>
+
+      {/* <div
+        id="cluster-topics"
+        style={{ width: "20%", height: "100%", float: "left" }}
+      > */}
+      <ClusterTopics clusterHovering={clusterHovering}></ClusterTopics>
+      {/* </div> */}
+    </>
   );
 };
 

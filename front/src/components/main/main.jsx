@@ -41,7 +41,7 @@ const Main = () => {
               children: [
                 {
                   type: "tabset",
-                  weight: 80,
+                  weight: 100,
                   children: [
                     {
                       type: "tab",
@@ -51,18 +51,18 @@ const Main = () => {
                     },
                   ],
                 },
-                {
-                  type: "tabset",
-                  weight: 20,
-                  children: [
-                    {
-                      type: "tab",
-                      name: "cluster topics",
-                      component: "cluster-topics",
-                      enableClose: false,
-                    },
-                  ],
-                }
+                // {
+                //   type: "tabset",
+                //   weight: 20,
+                //   children: [
+                //     {
+                //       type: "tab",
+                //       name: "cluster topics",
+                //       component: "cluster-topics",
+                //       enableClose: false,
+                //     },
+                //   ],
+                // },
               ],
             },
             {
@@ -102,10 +102,10 @@ const Main = () => {
             // setSelectRepo={setSelectRepo}
           />
         );
-      // case "cluster-view":
-      //   return <ClusterView maximize={maximize}/>;
-      case "cluster-topics":
-        return <ClusterTopics />;
+      case "cluster-view":
+        return <ClusterView />;
+      // case "cluster-topics":
+      //   return <ClusterTopics clusterHovering={clusterHovering} />;
       case "relevant-repos":
         return <RelevantRepos />;
       case "similar-repos":
@@ -124,10 +124,10 @@ const Main = () => {
     if (init && flexObj !== undefined) {
       if (query !== "") {
         flexObj[0].style.left = "20vw"; // 根据是否有查询更新页面布局
-        setSelectRepo('aaaa')
+        setSelectRepo("aaaa");
       } else {
         flexObj[0].style.left = "0";
-        setMaximize('width')
+        setMaximize("width");
       }
     }
   }, [query]);
@@ -135,7 +135,7 @@ const Main = () => {
   useEffect(() => {
     // console.log('selectRepo1', selectRepo);
     if (init && selectRepo != "") {
-      console.log('selectRepo2', selectRepo);
+      console.log("selectRepo2", selectRepo);
     }
   }, [selectRepo]);
 
@@ -177,33 +177,33 @@ const Main = () => {
       </div>
       <div id="search-result">
         {query && (
-            <div id="list-container">
-              <ResultList
-                result={result}
-                query={query}
-                loading={loading}
-              ></ResultList>
-            </div>
+          <div id="list-container">
+            <ResultList
+              result={result}
+              query={query}
+              loading={loading}
+            ></ResultList>
+          </div>
         )}
-        <Layout 
-          model={model} 
-          factory={factory} 
+        <Layout
+          model={model}
+          factory={factory}
           icons={{
             maximize: <>&#128470;&#xFE0E;</>,
-            restore: <>&#128469;&#xFE0E;</>
+            restore: <>&#128469;&#xFE0E;</>,
           }}
-          />
+        />
         {selectRepo && (
           <>
-          <div id='close-button-div'>
-          <button
-              id="close-repo-portrait"
-              aria-label="Close"
-              onClick={()=>{
-                setSelectRepo("")
-              }}
-            ></button>
-          </div>
+            <div id="close-button-div">
+              <button
+                id="close-repo-portrait"
+                aria-label="Close"
+                onClick={() => {
+                  setSelectRepo("");
+                }}
+              ></button>
+            </div>
             <div id="repo-portrait">
               <RepoPortrait></RepoPortrait>
             </div>
