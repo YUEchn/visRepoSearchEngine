@@ -3,7 +3,7 @@ import * as d3 from "d3";
 import * as seedrandom from "seedrandom";
 import { voronoiTreemap as d3VoronoiTreemap } from "d3-voronoi-treemap";
 import * as d3Cloud from "d3-cloud";
-import './css/clusterView.css'
+import "./css/clusterView.css";
 // import { hexgrid as d3Hexgrid } from "d3-hexgrid";
 // import { hexbin as d3Hexbin } from "d3-hexbin";
 // 首先根据力导向图生成布局
@@ -434,18 +434,18 @@ const ClusterView = ({ maximum }) => {
     ) =>
       showUpButton
         ? [
-          [0, upButtonSize],
-          [upButtonSize, 0],
-          [originWidth - 1, 0],
-          [originWidth - 1, originHeight - 1],
-          [0, originHeight - 1],
-        ]
+            [0, upButtonSize],
+            [upButtonSize, 0],
+            [originWidth - 1, 0],
+            [originWidth - 1, originHeight - 1],
+            [0, originHeight - 1],
+          ]
         : [
-          [0, 0],
-          [originWidth - 1, 0],
-          [originWidth - 1, originHeight - 1],
-          [0, originHeight - 1],
-        ];
+            [0, 0],
+            [originWidth - 1, 0],
+            [originWidth - 1, originHeight - 1],
+            [0, originHeight - 1],
+          ];
     const baseShape = createBaseShape(
       originWidth,
       originHeight,
@@ -454,10 +454,12 @@ const ClusterView = ({ maximum }) => {
     );
     let current = null;
     const focusParent = () => {
-      if (current.parent) {
+      if (current.parent && current.height!== 0) {
         // 当前是第二层
-        delay(phase1Duration).then(() =>
+        delay(phase1Duration).then(() =>{
+          console.log(current.height);
           d3.selectAll(".circle-g").style("visibility", "visible")
+        }
         );
       }
       return current.parent ? renderNode(current.parent) : null;
@@ -540,8 +542,8 @@ const ClusterView = ({ maximum }) => {
       };
     };
     //  节点的事件处理函数
-    const onFocus = () => { },
-      onHover = () => { };
+    const onFocus = () => {},
+      onHover = () => {};
     const handleHoverEnter = (node, event) => {
       dispatcher.call(EVENT_TYPE_HOVER_GAIN, this, node);
       if (!isEqual(node, current)) {
@@ -554,7 +556,6 @@ const ClusterView = ({ maximum }) => {
       }
     };
     const handleHoverExit = (node, event) => {
-      onHover(node, event, false);
       dispatcher.call(EVENT_TYPE_HOVER_LOSE, this);
       voronoi
         .selectAll(".node")
@@ -568,7 +569,7 @@ const ClusterView = ({ maximum }) => {
           ? node.ancestors().find((d) => d.depth === current.depth + 1)
           : node.parent;
 
-      if (target.height >= minHeight) {
+      if (target.height > minHeight) {    // 最后一层不进入
         renderNode(target);
       }
     };
@@ -776,11 +777,11 @@ const ClusterView = ({ maximum }) => {
           .attr("pointer-events", (d) => (d.height === 0 ? "fill" : "none"))
           .attr("stroke-width", (d) => strokeWidth(d.depth));
 
-
         const relationR = 0.85;
         const matchR = 0.8; // 词云所占据的区域比例
         const wordCloudR = 0.77;
 
+        console.log('执行了里面');
         const innerCirle = all
           .filter((d) => d.depth === 1) // 只在第一次分层下面绘制点
           .append("g")
@@ -811,7 +812,7 @@ const ClusterView = ({ maximum }) => {
                   Math.abs(
                     ((targetPos[1] - targetPos[0]) /
                       (sourcePos[1] - sourcePos[0])) *
-                    dx
+                      dx
                   )
                 );
                 //向右上弯曲
@@ -872,26 +873,25 @@ const ClusterView = ({ maximum }) => {
           .data((d) => d.data.content)
           .join("path")
           .attr("d", function (d, i) {
-            let curMaxRadius = d3.select(this.parentNode)._groups[0][0].__data__.polyProps.maxRadius
+            let curMaxRadius = d3.select(this.parentNode)._groups[0][0].__data__
+              .polyProps.maxRadius;
 
-            return innerArc(i, curMaxRadius)
+            return innerArc(i, curMaxRadius);
           })
           .attr("stroke-width", "1")
           .attr("fill", (d) => inner_color_map[d]);
         // 内部词云
-        const wordclousG = innerCirle
-          .append("g")
-          .attr("class", "wordcloud-g")
-          // .append('circle')
-          // .attr('cx', 0)
-          // .attr('cy', 0)
-          // .attr('r', d => d.polyProps.maxRadius * wordCloudR)
-          // .attr('fill', 'none')
+        // .append('circle')
+        // .attr('cx', 0)
+        // .attr('cy', 0)
+        // .attr('r', d => d.polyProps.maxRadius * wordCloudR)
+        // .attr('fill', 'none')
         // 表示连接关系的外部bar
         const circleRingG = innerCirle
           .append("g")
           .attr("class", "circle-ring-g");
 
+        const wordclousG = innerCirle.append("g").attr("class", "wordcloud-g");
         const connectionX = d3
           .scaleBand()
           .domain(cluster_arr.map((d, i) => i))
@@ -899,7 +899,8 @@ const ClusterView = ({ maximum }) => {
           .align(0);
         for (let i = 0; i < circleRingG._groups[0].length; i++) {
           // 当前圆的半径
-          let curMaxRadius = d3.select(circleRingG._groups[0][i])._groups[0][0].__data__.polyProps.maxRadius
+          let curMaxRadius = d3.select(circleRingG._groups[0][i])._groups[0][0]
+            .__data__.polyProps.maxRadius;
           let y = d3
             .scaleRadial()
             .domain([0, data.data.maxConnection]) // 连接的最大权重
@@ -972,7 +973,7 @@ const ClusterView = ({ maximum }) => {
                 Math.abs(
                   ((targetPos[1] - targetPos[0]) /
                     (sourcePos[1] - sourcePos[0])) *
-                  dx
+                    dx
                 )
               );
               //向右上弯曲
@@ -999,86 +1000,57 @@ const ClusterView = ({ maximum }) => {
             });
 
           // 添加词云
-          let words = [
+          let words1 = [
             {
-              "text": "go",
-              "value": 12
+              text: "go",
+              value: 12,
             },
             {
-              "text": "sea",
-              "value": 10
+              text: "sea",
+              value: 10,
             },
             {
-              "text": "one",
-              "value": 10
+              text: "one",
+              value: 10,
             },
             {
-              "text": "part",
-              "value": 7
+              text: "part",
+              value: 7,
             },
             {
-              "text": "water",
-              "value": 7
+              text: "water",
+              value: 7,
             },
             {
-              "text": "way way",
-              "value": 6
+              text: "way way",
+              value: 6,
             },
             {
-              "text": "get",
-              "value": 6
+              text: "get",
+              value: 6,
             },
             {
-              "text": "way way",
-              "value": 6
-            }]
-          
-          let wordSize = d3.scaleSqrt()
-            .domain([1, d3.max(words.map(d => d.value))])
-            .range([6, 82]);
-          console.log(d3.select(wordclousG._groups[0][i]), Math.round(Math.sqrt(2) * curMaxRadius), Math.round(Math.sqrt(2) * curMaxRadius));
-          let cloud = d3Cloud()
-            .size([Math.round(Math.sqrt(2) * curMaxRadius), Math.round(Math.sqrt(2) * curMaxRadius)])
-            .words(words)
-            .padding(2)
-            .rotate(0)
-            .font("Verdana, Arial, Helvetica, sans-serif")
-            .fontSize(d => wordSize(d.value))
-            .on("word", ({ size, x, y, rotate, text }) => {
-              console.log(text);
-              d3.select(wordclousG._groups[0][i]).append('text')
-                .attr("font-size", size)
-                .attr("transform", `translate(${x},${y}) rotate(${rotate})`)
-                .text(text)
-                // .classed("click-only-text", true)
-                // .classed("word-default", true)
-                // .on("mouseover", handleMouseOver)
-                // .on("mouseout", handleMouseOut)
-                // .on("click", handleClick);
-              function handleMouseOver(d, i) {
-                d3.select(this)
-                  .classed("word-hovered", true)
-                  .transition(`mouseover-${text}`).duration(200).ease(d3.easeLinear)
-                  .attr("font-size", size + 2)
-                  .attr("font-weight", "bold");
-              }
+              text: "way way",
+              value: 6,
+            },
+          ];
+          let tt = '1111;23232;3321321;132321312;13213213;'
+          let fontSize = curMaxRadius/(tt.split(';').length*9.9)   // 根据当前圆的半径和包含的主题数量确定文本的大小
+          d3.select(wordclousG._groups[0][i])
+          .append('text')
+          .attr('font-size', `${fontSize}em`)
+          .style('text-anchor', 'middle')
+          .selectAll('tspan')
+          .data(d => lines(words(tt)))
+          .join('tspan')
+          .attr("x", 0)
+          .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.9}em`)
+          .text(d => d.text ); 
 
-              function handleMouseOut(d, i) {
-                d3.select(this)
-                  .classed("word-hovered", false)
-                  .interrupt(`mouseover-${text}`)
-                  .attr("font-size", size);
-              }
-
-              function handleClick(d, i) {
-                var e = d3.select(this);
-                e.classed("word-selected", !e.classed("word-selected"));
-              }
-            })
-            // console.log(9999);
-            cloud.start()
-            // cloud.stop()
         }
+
+
+
 
         all
           .filter((d) => d.height === 0)
@@ -1164,7 +1136,7 @@ const ClusterView = ({ maximum }) => {
           i === 0
             ? 0
             : distances[i - 1] +
-            computeDistance(coordinates[i - 1], coordinate);
+              computeDistance(coordinates[i - 1], coordinate);
         distances.push(value);
         return distances;
       }, []);
@@ -1296,6 +1268,37 @@ const ClusterView = ({ maximum }) => {
 
     return Math.floor(minRadius - strokeWidth);
   }
+
+  function words(text) {
+    const words = text.split(';'); // To hyphenate: /\s+|(?<=-)/
+    if (!words[words.length - 1]) words.pop();
+    if (!words[0]) words.shift();
+    return words;
+  }
+  function lines(words){
+    let line;
+    let lineWidth0 = Infinity;
+    const lines = [];
+    for (let i = 0, n = words.length; i < n; ++i) {
+      let lineText1 = (line ? line.text + " " : "") + words[i];
+      let lineWidth1 = measureWidth(lineText1);
+      if ((lineWidth0 + lineWidth1) / 2 < Math.sqrt(measureWidth(words.join(" ").trim()) * 18) ) {
+        line.width = lineWidth0 = lineWidth1;
+        line.text = lineText1;
+      } else {
+        lineWidth0 = measureWidth(words[i]);
+        line = {width: lineWidth0, text: words[i]};
+        lines.push(line);
+      }
+    }
+    return lines;
+  }
+  function measureWidth(){
+    const context = document.createElement("canvas").getContext("2d");
+    return text => context.measureText(text).width;
+  }
+
+
 
   return (
     <div
