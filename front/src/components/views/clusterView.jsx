@@ -2,8 +2,10 @@ import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
 import * as seedrandom from "seedrandom";
 import { voronoiTreemap as d3VoronoiTreemap } from "d3-voronoi-treemap";
-import { hexgrid as d3Hexgrid } from "d3-hexgrid";
-import { hexbin as d3Hexbin } from "d3-hexbin";
+import * as d3Cloud from "d3-cloud";
+import './css/clusterView.css'
+// import { hexgrid as d3Hexgrid } from "d3-hexgrid";
+// import { hexbin as d3Hexbin } from "d3-hexbin";
 // 首先根据力导向图生成布局
 // 然后生成Voronoi Grid
 
@@ -774,7 +776,7 @@ const ClusterView = ({ maximum }) => {
           .attr("pointer-events", (d) => (d.height === 0 ? "fill" : "none"))
           .attr("stroke-width", (d) => strokeWidth(d.depth));
 
-        
+
         const relationR = 0.85;
         const matchR = 0.8; // 词云所占据的区域比例
         const wordCloudR = 0.77;
@@ -848,19 +850,19 @@ const ClusterView = ({ maximum }) => {
           .attr("fill", "rgba(255, 255, 255, 0.5)");
 
         // 圆中心的编号
-        innerCirle
-          .append("text")
-          .attr("x", 0)
-          .attr("y", 5)
-          .attr("font", "1em sans-serif")
-          .attr("fill", "black")
-          .attr("text-anchor", "middle")
-          .text((d) => d.data.id);
+        // innerCirle
+        //   .append("text")
+        //   .attr("x", 0)
+        //   .attr("y", 5)
+        //   .attr("font", "1em sans-serif")
+        //   .attr("fill", "black")
+        //   .attr("text-anchor", "middle")
+        //   .text((d) => d.data.id);
         // 表示匹配特征的圆环
         const innerArc = d3
           .arc()
-          .innerRadius((i, maxRadius) => maxRadius*matchR )
-          .outerRadius((i, maxRadius) => maxRadius*relationR-1)
+          .innerRadius((i, maxRadius) => maxRadius * matchR)
+          .outerRadius((i, maxRadius) => maxRadius * relationR - 1)
           .startAngle((i) => ((2 * Math.PI) / data.data.maxLength) * i - 2)
           .endAngle((i) => ((2 * Math.PI) / data.data.maxLength) * (i + 1) - 2)
           .cornerRadius(1)
@@ -869,14 +871,22 @@ const ClusterView = ({ maximum }) => {
           .selectAll("path")
           .data((d) => d.data.content)
           .join("path")
-          .attr("d", function(d, i){
+          .attr("d", function (d, i) {
             let curMaxRadius = d3.select(this.parentNode)._groups[0][0].__data__.polyProps.maxRadius
 
             return innerArc(i, curMaxRadius)
           })
           .attr("stroke-width", "1")
           .attr("fill", (d) => inner_color_map[d]);
-
+        // 内部词云
+        const wordclousG = innerCirle
+          .append("g")
+          .attr("class", "wordcloud-g")
+          // .append('circle')
+          // .attr('cx', 0)
+          // .attr('cy', 0)
+          // .attr('r', d => d.polyProps.maxRadius * wordCloudR)
+          // .attr('fill', 'none')
         // 表示连接关系的外部bar
         const circleRingG = innerCirle
           .append("g")
@@ -912,8 +922,8 @@ const ClusterView = ({ maximum }) => {
                 .data.id;
               return "connection-" + curCluster.toString() + "-" + i.toString();
             })
-            .attr("fill", "rgba(255, 255, 255, 1)")
-            .attr("stroke", "rgba(255, 255, 255, 1)")
+            .attr("fill", "rgba(255, 250, 225, 1)")
+            .attr("stroke", "rgba(255, 250, 225, 1)")
             .attr("value", (d) => d)
             .attr("center", connectionArc.centroid) // 每个关系圆弧的中心
             .attr("stroke-width", "1px")
@@ -987,17 +997,88 @@ const ClusterView = ({ maximum }) => {
             .on("mouseout", function () {
               d3.select("#temp-line").remove();
             });
-        }
 
-         // 内部词云
-         const wordclousG = innerCirle
-         .append("g")
-         .attr("class", "wordcloud-g")
-         .append('circle')
-         .attr('cx', 0)
-         .attr('cy', 0)
-         .attr('r', d => d.polyProps.maxRadius*wordCloudR)
-         .attr('fill', 'pink')
+          // 添加词云
+          let words = [
+            {
+              "text": "go",
+              "value": 12
+            },
+            {
+              "text": "sea",
+              "value": 10
+            },
+            {
+              "text": "one",
+              "value": 10
+            },
+            {
+              "text": "part",
+              "value": 7
+            },
+            {
+              "text": "water",
+              "value": 7
+            },
+            {
+              "text": "way way",
+              "value": 6
+            },
+            {
+              "text": "get",
+              "value": 6
+            },
+            {
+              "text": "way way",
+              "value": 6
+            }]
+          
+          let wordSize = d3.scaleSqrt()
+            .domain([1, d3.max(words.map(d => d.value))])
+            .range([6, 82]);
+          console.log(d3.select(wordclousG._groups[0][i]), Math.round(Math.sqrt(2) * curMaxRadius), Math.round(Math.sqrt(2) * curMaxRadius));
+          let cloud = d3Cloud()
+            .size([Math.round(Math.sqrt(2) * curMaxRadius), Math.round(Math.sqrt(2) * curMaxRadius)])
+            .words(words)
+            .padding(2)
+            .rotate(0)
+            .font("Verdana, Arial, Helvetica, sans-serif")
+            .fontSize(d => wordSize(d.value))
+            .on("word", ({ size, x, y, rotate, text }) => {
+              console.log(text);
+              d3.select(wordclousG._groups[0][i]).append('text')
+                .attr("font-size", size)
+                .attr("transform", `translate(${x},${y}) rotate(${rotate})`)
+                .text(text)
+                // .classed("click-only-text", true)
+                // .classed("word-default", true)
+                // .on("mouseover", handleMouseOver)
+                // .on("mouseout", handleMouseOut)
+                // .on("click", handleClick);
+              function handleMouseOver(d, i) {
+                d3.select(this)
+                  .classed("word-hovered", true)
+                  .transition(`mouseover-${text}`).duration(200).ease(d3.easeLinear)
+                  .attr("font-size", size + 2)
+                  .attr("font-weight", "bold");
+              }
+
+              function handleMouseOut(d, i) {
+                d3.select(this)
+                  .classed("word-hovered", false)
+                  .interrupt(`mouseover-${text}`)
+                  .attr("font-size", size);
+              }
+
+              function handleClick(d, i) {
+                var e = d3.select(this);
+                e.classed("word-selected", !e.classed("word-selected"));
+              }
+            })
+            // console.log(9999);
+            cloud.start()
+            // cloud.stop()
+        }
 
         all
           .filter((d) => d.height === 0)
