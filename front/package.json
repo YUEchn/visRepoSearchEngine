@@ -16,6 +16,7 @@
     "d3-voronoi-treemap": "^1.1.2",
     "d3-weighted-voronoi": "^1.1.3",
     "dayjs": "^1.11.7",
+    "echarts": "^5.4.1",
     "es6-promise": "^4.2.8",
     "flexlayout-react": "^0.7.5",
     "html-react-parser": "^3.0.6",

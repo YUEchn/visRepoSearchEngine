@@ -3,7 +3,7 @@ import { useState } from "react";
 import { LikeOutlined, StarOutlined, EyeOutlined } from "@ant-design/icons";
 import { Typography, List, Space, Tag } from "antd";
 import parse from "html-react-parser";
-import "./resultList.css";
+import "./css/resultList.css";
 import { useEffect } from "react";
 const { Paragraph } = Typography;
 

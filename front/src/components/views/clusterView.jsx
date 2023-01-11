@@ -100,6 +100,38 @@ const ClusterView = ({ maximum }) => {
               id: "MergeEdge",
               value: 743,
             },
+            {
+              id: "AgglomerativeCluster1",
+              value: 3938,
+            },
+            {
+              id: "CommunityStructure1",
+              value: 3812,
+            },
+            {
+              id: "HierarchicalCluster1",
+              value: 6714,
+            },
+            {
+              id: "MergeEdge1",
+              value: 743,
+            },
+            {
+              id: "AgglomerativeCluster2",
+              value: 3938,
+            },
+            {
+              id: "CommunityStructure2",
+              value: 3812,
+            },
+            {
+              id: "HierarchicalCluster2",
+              value: 6714,
+            },
+            {
+              id: "MergeEdge2",
+              value: 743,
+            },
           ],
         },
         {
@@ -772,6 +804,7 @@ const ClusterView = ({ maximum }) => {
           .attr("fill", (d) => (d.height > 0 ? "none" : getColor(d)))
           .attr("stroke", "white")
           .attr("stroke-opacity", 1)
+          .attr("value", d => d.children ? d.children.length : d.data.value)
           .attr("stroke-width", 0)
           .attr("stroke-linejoin", "round")
           .attr("pointer-events", (d) => (d.height === 0 ? "fill" : "none"))
@@ -781,7 +814,6 @@ const ClusterView = ({ maximum }) => {
         const matchR = 0.8; // 词云所占据的区域比例
         const wordCloudR = 0.77;
 
-        console.log('执行了里面');
         const innerCirle = all
           .filter((d) => d.depth === 1) // 只在第一次分层下面绘制点
           .append("g")

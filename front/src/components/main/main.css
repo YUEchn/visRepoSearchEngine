@@ -62,10 +62,10 @@
     float: left;
 }
 
-:root {
+/* :root {
     overflow-y: hidden;
     overflow-x: hidden;
-}
+} */
 
 .App-logo{
     
@@ -82,7 +82,7 @@
 
 #list-container{
     float: left;
-    width: 25vw;
+    width: 20vw;
     height: 90vh;
     display: flex;
     position: absolute;

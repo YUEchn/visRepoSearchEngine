@@ -11,6 +11,7 @@ import RelevantRepos from "../views/revelantRepos";
 import ClusterView from "../views/clusterView";
 import RepoPortrait from "../views/repoPortrait";
 import TimeFilter from "../views/timeFilter";
+import ClusterTopics from "../views/clusterTopics";
 const { Search } = Input;
 
 const Main = () => {
@@ -40,8 +41,7 @@ const Main = () => {
               children: [
                 {
                   type: "tabset",
-                  weight: 100,
-                  // id: "cluster-tabset",
+                  weight: 80,
                   children: [
                     {
                       type: "tab",
@@ -51,6 +51,18 @@ const Main = () => {
                     },
                   ],
                 },
+                {
+                  type: "tabset",
+                  weight: 20,
+                  children: [
+                    {
+                      type: "tab",
+                      name: "cluster topics",
+                      component: "cluster-topics",
+                      enableClose: false,
+                    },
+                  ],
+                }
               ],
             },
             {
@@ -90,8 +102,10 @@ const Main = () => {
             // setSelectRepo={setSelectRepo}
           />
         );
-      case "cluster-view":
-        return <ClusterView maximize={maximize}/>;
+      // case "cluster-view":
+      //   return <ClusterView maximize={maximize}/>;
+      case "cluster-topics":
+        return <ClusterTopics />;
       case "relevant-repos":
         return <RelevantRepos />;
       case "similar-repos":
@@ -109,7 +123,7 @@ const Main = () => {
     let flexObj = document.getElementsByClassName("flexlayout__layout");
     if (init && flexObj !== undefined) {
       if (query !== "") {
-        flexObj[0].style.left = "25vw"; // 根据是否有查询更新页面布局
+        flexObj[0].style.left = "20vw"; // 根据是否有查询更新页面布局
         setSelectRepo('aaaa')
       } else {
         flexObj[0].style.left = "0";
@@ -119,7 +133,7 @@ const Main = () => {
   }, [query]);
 
   useEffect(() => {
-    console.log('selectRepo1', selectRepo);
+    // console.log('selectRepo1', selectRepo);
     if (init && selectRepo != "") {
       console.log('selectRepo2', selectRepo);
     }
