@@ -164,7 +164,6 @@ const ClusterTopics = ({ clusterHovering }) => {
   useEffect(() => {
     if (clusterHovering != -1) {
       let moveObj = document.getElementById("cluster-topics");
-      console.log(clusterHovering + 1, clusterHovering * 60);
       moveObj.scrollTo(0, clusterHovering * 60);
     }
   }, [clusterHovering]);
@@ -176,7 +175,6 @@ const ClusterTopics = ({ clusterHovering }) => {
   }, [init]);
 
   function drawClusterTopics() {
-    console.log("重画了");
     let chartHeight = 60 * data.length;
     document.getElementById(
       "cluster-topics-flow"

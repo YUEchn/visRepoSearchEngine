@@ -869,7 +869,6 @@ const ClusterView = () => {
                   .style("stroke-width", "2");
               }
             });
-            console.log(d.data.id);
             setClusterHovering(d.data.id); // 当前选择的集群的id: 数字
           })
           .on("mouseout", function (event, d) {
