@@ -257,7 +257,6 @@ const ClusterTopics = ({ clusterHovering }) => {
         id="cluster-topics-flow"
         ref={chartRef}
         style={{ width: "100%", height: "550px" }}
-        onscroll={() => console.log("4545446")}
       ></div>
     </div>
   );

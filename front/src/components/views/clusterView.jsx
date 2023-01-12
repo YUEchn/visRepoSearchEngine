@@ -66,8 +66,8 @@ const ClusterView = () => {
       EVENT_TYPE_ENTER_TRANSITION_COMPLETE,
       EVENT_TYPE_UPDATE_TRANSITION_COMPLETE,
     ];
-    const phase1Duration = 1200,
-      phase2Duration = 500;
+    const phase1Duration = 120,
+      phase2Duration = 50;
     function delay(ms) {
       return new Promise((resolve) => setTimeout(resolve, ms));
     }
@@ -453,7 +453,6 @@ const ClusterView = () => {
         originWidth - margin.left - margin.right,
         originHeight - margin.top - margin.bottom,
       ])
-      .attr("stroke-width", 2);
 
     // 绘图内容的形状
     const upButtonSize = 50,

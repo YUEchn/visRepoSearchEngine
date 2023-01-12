@@ -62,10 +62,10 @@
     float: left;
 }
 
-/* :root {
+:root {
     overflow-y: hidden;
     overflow-x: hidden;
-} */
+}
 
 .App-logo{
     

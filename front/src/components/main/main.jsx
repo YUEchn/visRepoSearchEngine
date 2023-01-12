@@ -11,7 +11,7 @@ import RelevantRepos from "../views/revelantRepos";
 import ClusterView from "../views/clusterView";
 import RepoPortrait from "../views/repoPortrait";
 import TimeFilter from "../views/timeFilter";
-import ClusterTopics from "../views/clusterTopics";
+import ClusterDetails from "../views/clusterDetails";
 const { Search } = Input;
 
 const Main = () => {
@@ -37,7 +37,7 @@ const Main = () => {
           children: [
             {
               type: "row",
-              weight: 60,
+              weight: 100,
               children: [
                 {
                   type: "tabset",
@@ -50,19 +50,7 @@ const Main = () => {
                       enableClose: false,
                     },
                   ],
-                },
-                // {
-                //   type: "tabset",
-                //   weight: 20,
-                //   children: [
-                //     {
-                //       type: "tab",
-                //       name: "cluster topics",
-                //       component: "cluster-topics",
-                //       enableClose: false,
-                //     },
-                //   ],
-                // },
+                }
               ],
             },
             {
@@ -71,16 +59,22 @@ const Main = () => {
               children: [
                 {
                   type: "tab",
-                  name: "relevant repos",
-                  component: "relevant-repos",
+                  name: "cluster details",
+                  component: "cluster-details",
                   enableClose: false,
                 },
-                {
-                  type: "tab",
-                  name: "similar repos",
-                  component: "similar-repos",
-                  enableClose: false,
-                },
+                // {
+                //   type: "tab",
+                //   name: "relevant repos",
+                //   component: "relevant-repos",
+                //   enableClose: false,
+                // },
+                // {
+                //   type: "tab",
+                //   name: "similar repos",
+                //   component: "similar-repos",
+                //   enableClose: false,
+                // },
               ],
             },
           ],
@@ -104,8 +98,8 @@ const Main = () => {
         );
       case "cluster-view":
         return <ClusterView />;
-      // case "cluster-topics":
-      //   return <ClusterTopics clusterHovering={clusterHovering} />;
+      case "cluster-details":
+        return <ClusterDetails  />;
       case "relevant-repos":
         return <RelevantRepos />;
       case "similar-repos":
