@@ -50,7 +50,7 @@ const Main = () => {
                       enableClose: false,
                     },
                   ],
-                }
+                },
               ],
             },
             {
@@ -96,10 +96,10 @@ const Main = () => {
             // setSelectRepo={setSelectRepo}
           />
         );
-      case "cluster-view":
-        return <ClusterView />;
+      // case "cluster-view":
+      //   return <ClusterView />;
       case "cluster-details":
-        return <ClusterDetails  />;
+        return <ClusterDetails />;
       case "relevant-repos":
         return <RelevantRepos />;
       case "similar-repos":

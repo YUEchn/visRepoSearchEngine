@@ -819,95 +819,209 @@ const ClusterDetails = () => {
     }
   }, [init]);
 
-
   const drawClusterDetais = () => {
     const margin = { top: 10, bottom: 10, left: 50, right: 50 };
-    const width = Math.floor(chartRef.current.offsetWidth);
-    const height = Math.floor(chartRef.current.offsetHeight);
-    data.sort((a, b) => multiRuleSort(a, b))   // 对数据根据x轴的值进行排序
-    const mergeData = mergeDataFunc() 
+    const width = Math.floor(chartRef.current.offsetWidth) - margin.left - margin.right;
+    const height = Math.floor(chartRef.current.offsetHeight) - margin.top - margin.bottom;
+    data.sort((a, b) => multiRuleSort(a, b)); // 对数据根据x轴的值进行排序
+    const circleR = 6;
+    let yAvg = average(data);
+    const mergeData = mergeDataFunc(
+      width,
+      height,
+      circleR,
+      yAvg
+    );
     let chartHeight = height * 0.8; // 纵向图表的高度
-    // let
-    const svg = d3
-      .select("#cluster-details")
-      .append("svg")
-      .attr("preserveAspectRatio", "xMidYMid meet")
-      .style("background", "white")
-      .attr("width", "100%")
-      .attr("height", "100%")
-      .attr("viewBox", [
-      0,
-      0,
-      width - margin.left - margin.right,
-      height - margin.top - margin.bottom
-    ])
-    // 对数据做进一步处理
-    
-    const wrapper = svg.append("g").attr("transform", `translate(${margin.left}, ${margin.top})`);
     const xData = mergeData.map((item) => item[xAxisType]);
     const yData = mergeData.map((item) => item[yAxisType]);
     const [xmin, xmax] = [d3.min(xData), d3.max(xData)]; // 轴的最值
     const [ymin, ymax] = [d3.min(yData), d3.max(yData)];
     const yNumber = ymax - ymin;
-    const circleR = 5;
-    // console.log(xData, yData);
-    const xAxisScale = d3.scaleQuantize().domain([xmin, xmax]).range(d3.range(0, width-margin.left-margin.right, 0.1))
-    const yAxisScale = d3.scaleLinear().domain([ymin, ymax]).range([0, height-margin.top-margin.bottom])
-    wrapper.append('g')
-            .attr('class', 'chart-g')
-            .selectAll('circle')
-            .data(mergeData)
-            .join('circle')
-            .attr('cx', (d) => xAxisScale(d[xAxisType]))
-            .attr('cy', (d) => height-margin.top-margin.bottom-yAxisScale(d[yAxisType]))
-            .attr('xval', (d) => d[xAxisType])
-            .attr('yval', (d) => d[yAxisType])
-            .attr('r', 5)
-            .attr('fill', d => {
-                if(d.group.length !==0){
-                    return 'red'
-                }
-                return '#d6f6a7'
-            })
+    // let
+    const svg = d3
+      .select("#cluster-details")
+      .append("svg")
+      // .attr("preserveAspectRatio", "xMidYMid meet")
+      .style("background", "white")
+      .attr("width", width)
+      .attr("height", height)
+      // .attr("width", "100%")
+      // .attr("height", "100%")
+      // .attr("viewBox", [
+      //   0,
+      //   0,
+      //   width* 2,
+      //   height*2,
+      //   // width - margin.left - margin.right,
+      //   // height - margin.top - margin.bottom,
+      // ])
+      .attr("transform", `translate(${margin.left}, ${margin.top})`);
+    // 对数据做进一步处理
 
+    const wrapper = svg
+      .append("g")
+      // .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+    console.log(mergeData);
+    // const xAxisScale = d3
+    //   .scaleQuantize()
+    //   .domain([xmin, xmax])
+    //   .range(d3.range(0, width - margin.left - margin.right, 0.1));
+    // const yAxisScale = d3
+    //   .scaleLinear()
+    //   .domain([ymin, ymax])
+    //   .range([0, height - margin.top - margin.bottom]);
+    wrapper
+      .append("g")
+      .attr("class", "chart-g")
+      .selectAll("circle")
+      .data(mergeData)
+      .join("circle")
+      .attr("cx", (d) => d.x) // 计算出来的x、y值
+      .attr("cy", (d) => d.y)
+      .attr("xval", (d) => d[xAxisType])
+      .attr("yval", (d) => d[yAxisType])
+      .attr("r", circleR)
+      .attr("fill", (d) => {
+        if (d.group.length !== 0) {
+          return "red";
+        }
+        return "#d6f6a7";
+      });
   };
 
-  // 对排序后的数据根据y轴的值进行合并
-  function mergeDataFunc(){
-    let mergeData = [{...data[0], group: []}]  // 把第一条数据放进去并初始化类型为单个点
-    let mergeIndex = 1
-    for(let i=1; i< data.length; i++){
-        let temp = data[i]
-        // 当前点与merge中的最后一条数据相同
-        if(temp[xAxisType] === mergeData[mergeIndex-1][xAxisType] && temp[yAxisType] === mergeData[mergeIndex-1][yAxisType]){
-            if(mergeData[mergeIndex-1]['group'].length === 0){
-                delete mergeData[mergeIndex-1].group
-                mergeData[mergeIndex-1] = {[xAxisType]: temp[xAxisType], [yAxisType]: temp[yAxisType], group: [mergeData[mergeIndex-1], temp] }
-            }else{
-                mergeData[mergeIndex-1] = {[xAxisType]: temp[xAxisType], [yAxisType]: temp[yAxisType], group: [...mergeData[mergeIndex-1]['group'], temp] }
-            }
-            
-        }else{
-            mergeData[mergeIndex] = {...temp, group: []}
-            mergeIndex += 1
+  // 对排序后的数据根据y轴的值进行合并(合并同一个x下相同y值的点)
+  function mergeDataFunc(w, h, r, yAvg) {
+    let mergeData = [{ ...data[0], group: [], x: r, y: h / 2 - r }]; // 把第一条数据放进去并初始化类型为单个点，第一个点的位置位于初始位置
+    let mergeIndex = 1;
+    let colMaxNumber = Math.floor(h / (2 * 2 * r)); // 一半视图最多能容纳的点数
+    console.log(h, r, colMaxNumber);
+    let xLabel = {};
+    for (let i = 1; i < data.length; i++) {
+      let temp = data[i];
+      // 当前点与merge中的最后一条数据相同
+      if (
+        temp[xAxisType] === mergeData[mergeIndex - 1][xAxisType] &&
+        temp[yAxisType] === mergeData[mergeIndex - 1][yAxisType]
+      ) {
+        if (mergeData[mergeIndex - 1]["group"].length === 0) {
+          delete mergeData[mergeIndex - 1].group;
+          mergeData[mergeIndex - 1] = {
+            [xAxisType]: temp[xAxisType],
+            [yAxisType]: temp[yAxisType],
+            group: [mergeData[mergeIndex - 1], temp],
+          };
+        } else {
+          mergeData[mergeIndex - 1] = {
+            [xAxisType]: temp[xAxisType],
+            [yAxisType]: temp[yAxisType],
+            group: [...mergeData[mergeIndex - 1]["group"], temp],
+          };
         }
+      } else {
+        mergeData[mergeIndex] = { ...temp, group: [] };
+        mergeIndex += 1;
+      }
     }
-    return mergeData
+
+    // 计算合并后的数据的x, y
+    // xLabel={'x1': [number(y>avg), number(y<avg)], 'x2':[...]}
+    for (let i of mergeData) {
+      if (xLabel.hasOwnProperty(i[xAxisType])) {
+        if (i[yAxisType] >= yAvg) {
+          xLabel[i[xAxisType]][0] += 1;
+        } else {
+          xLabel[i[xAxisType]][1] += 1;
+        }
+      } else {
+        xLabel[i[xAxisType]] = [0, 0];
+        if (i[yAxisType] >= yAvg) {
+          xLabel[i[xAxisType]][0] += 1; // >= 平均数的数量
+        } else {
+          xLabel[i[xAxisType]][1] += 1;
+        }
+      }
+    }
+
+    let columnIndex = 0; // 标识属于第几列的，是累加的
+    let prevNeededCol = 0;
+    let positiveNumber = 0; // 某一个key下面的负数总数
+    let negativeNumber = 0; // 某一个key下面的正数总数
+    let prevKey = -1;
+    for (let i = 0; i < mergeData.length; i++) {
+      if (i === 0) {
+        // 第一个元素
+        columnIndex = 1;
+        positiveNumber = 0;
+        negativeNumber = 0;
+        prevKey = mergeData[i][xAxisType];
+        prevNeededCol = Math.ceil(
+          d3.max(xLabel[mergeData[i][xAxisType]]) / colMaxNumber
+        ); // 当前的横坐标值需要的列数
+      }
+
+      let curKey = mergeData[i][xAxisType]; // 当前key
+      if (curKey === prevKey) {
+        if (mergeData[i][yAxisType] >= yAvg) {
+          positiveNumber += 1;
+        } else {
+          negativeNumber += 1;
+        }
+      } else {
+        columnIndex += prevNeededCol; // 已经使用了的列数
+        // 重新初始化一些参数
+        prevNeededCol = Math.ceil(
+          d3.max(xLabel[mergeData[i][xAxisType]]) / colMaxNumber
+        ); // 当前的横坐标值需要的列数
+        positiveNumber = 0;
+        negativeNumber = 0;
+        prevKey = curKey;
+
+        if (mergeData[i][yAxisType] >= yAvg) {
+          positiveNumber += 1;
+        } else {
+          negativeNumber += 1;
+        }
+      }
+
+      if (mergeData[i][yAxisType] >= yAvg) {
+        mergeData[i]["y"] =
+          h / 2 - r * (2 * (positiveNumber % colMaxNumber) - 1); // 当前点的y值
+      } else {
+        mergeData[i]["y"] =
+          h / 2 + r * (2 * (negativeNumber % colMaxNumber) - 1); // 当前点的y值
+      }
+      mergeData[i]["x"] =
+        r *
+        ((columnIndex +
+          Math.floor(d3.max([positiveNumber, negativeNumber]) / colMaxNumber)) *
+          2 -
+          1); // 当前点的x值
+    }
+    return mergeData;
   }
 
   // 现根据x轴属性升序排序，再根据y轴属性升序排序
-  function multiRuleSort(a, b){
-    if(a[xAxisType] === b[xAxisType]){
-        if(a[yAxisType] > b[yAxisType]){
-            return 1
-        }else{
-            return -1
-        }
-    }else if(a[xAxisType] > b[xAxisType]){
-        return 1
+  function multiRuleSort(a, b) {
+    if (a[xAxisType] === b[xAxisType]) {
+      if (a[yAxisType] > b[yAxisType]) {
+        return 1;
+      } else {
+        return -1;
+      }
+    } else if (a[xAxisType] > b[xAxisType]) {
+      return 1;
     }
-    return -1
-
+    return -1;
+  }
+  // 计算y轴的平均值
+  function average(array) {
+    let sum = 0;
+    array.forEach((e) => {
+      sum += e[yAxisType];
+    });
+    return sum / array.length;
   }
 
   return (
