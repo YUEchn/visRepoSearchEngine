@@ -1,12 +1,15 @@
 import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
+import './css/clusterDetails.css'
 
+var data;   // 定义全局的data
 const ClusterDetails = () => {
   const [init, setInit] = useState(false);
   const [xAxisType, setXAisType] = useState("score"); // 横纵轴排列的数据类型
   const [yAxisType, , setYAisType] = useState("star");
+  const [openedP, setOpenedP] = useState([]);   // 设置被展开的节点（保留x坐标的信息）
   const chartRef = useRef();
-  const data = [
+  const originData = [
     {
         "id": "r0",
         "reponame": "r0",
@@ -8024,52 +8027,53 @@ const ClusterDetails = () => {
 
   useEffect(() => {
     if (init) {
-      drawClusterDetais();
+        data = originData.sort((a, b) => multiRuleSort(a, b)); // 对数据根据x轴的值进行排序
+        drawClusterDetais(data);
     }
   }, [init]);
 
-  const drawClusterDetais = () => {
+  useEffect(() => {
+    if(init){
+        drawClusterDetais(data);  // 更改了是否选择展开
+    }
+  }, [openedP])
+
+  const drawClusterDetais = (data) => {
+    d3.selectAll(`div#cluster-details svg`).remove();  // 每次重绘前清空之前的内容
+    d3.selectAll(`div#cluster-details div.toolTip`).remove();  // 每次重绘前清空之前的内容
     const margin = { top: 10, bottom: 10, left: 50, right: 50 };
-    const width = Math.floor(chartRef.current.offsetWidth) - margin.left - margin.right;
-    const height = Math.floor(chartRef.current.offsetHeight) - margin.top - margin.bottom;
-    data.sort((a, b) => multiRuleSort(a, b)); // 对数据根据x轴的值进行排序
+    const legendH = 30, legendW = 400;    // 图例的长宽
+    const interval = 10;  // 上下坐标轴之间的间隙
     const circleR = 6;
     let yAvg = average(data);
-    const [mergeData, maxWidth] = mergeDataFunc(
-      width,
+    const height = Math.floor(chartRef.current.offsetHeight) - margin.top - margin.bottom - legendH;
+    const [mergeData, maxWidth, xLabel] = mergeDataFunc(
+        data,
       height,
       circleR,
-      yAvg
-    );
-    const xData = mergeData.map((item) => item[xAxisType]);
-    const yData = mergeData.map((item) => item[yAxisType]);
-    const [xmin, xmax] = [d3.min(xData), d3.max(xData)]; // 轴的最值
-    const [ymin, ymax] = [d3.min(yData), d3.max(yData)];
-    const yNumber = ymax - ymin;
-    // let
+      yAvg,
+      interval
+    ); 
+    const yData = mergeData.map((item) => item[yAxisType]).sort(d3.ascending); // 取出所有的y值并进行排序
+    const [ymin, ymax] = [yData[0], yData[yData.length -1 ]];  // y轴的最值，用于颜色映射
+    document.getElementById("cluster-details").style.width = `${maxWidth + 200}px`; // 根据元素的数量动态设置内部div的高度
+    const colorScale = d3.scaleSequential([ymin, ymax], d3.interpolateBlues)
+    const innerPieColorScale = d3.scaleSequential([ymin, ymax], d3.interpolateReds)
+    // 添加tooltip
+    const tooltip = d3.select('#cluster-details').append('div').attr('class', 'toolTip')
     const svg = d3
       .select("#cluster-details")
       .append("svg")
       .attr("preserveAspectRatio", "xMidYMid meet")
       .style("background", "white")
-      // .attr("width", width)
-      // .attr("height", height)
       .attr("width", "100%")
       .attr("height", "100%")
-      // .attr("viewBox", [
-      //   0,
-      //   0,
-      //   width* 2,
-      //   height*2,
-      //   // width - margin.left - margin.right,
-      //   // height - margin.top - margin.bottom,
-      // ])
-      // .attr("transform", `translate(${margin.left}, ${margin.top})`);
-    // 对数据做进一步处理
-
+    
+    // 定义颜色映射
+    drawLegend()  // 绘制legend
     const wrapper = svg
       .append("g")
-      .attr("transform", `translate(${margin.left}, ${margin.top})`);
+      .attr("transform", `translate(${margin.left}, ${margin.top + legendH})`);
     // 坐标轴的箭头表示符号
     const markerWidth = 10, markerHeight = 10
     svg
@@ -8090,11 +8094,27 @@ const ClusterDetails = () => {
           .attr('x', -5)
           .attr('y', height/2)
           .attr('dy', '0.35em')
-          .style('fill', '#db2f72')
+          .style('fill', 'rgba(51, 51, 51, 1)')
           .style('font-size', '0.7em')
           .style('text-anchor', 'end')
-          .style('', 'end')
           .text(yAvg)
+
+    // 添加轴线
+
+    wrapper.selectAll('.xLabelRect')
+            .data(xLabel)
+            .join('rect')
+            .attr('class', 'xLabelRect')
+            .attr('x', d => d[0]* 2* circleR)
+            .attr('y', (height-interval)/2)
+            .attr('width', d => d[1]* 2* circleR)
+            .attr('height', interval)
+            .attr('fill', (d, i)=>{
+                if(i % 2 !== 0){
+                    return '#aaa'
+                }
+                return '#fff'
+            })
 
     wrapper.append('path')
           .attr('d', d3.line()([[0, height/2], [0, height-5]]))
@@ -8116,38 +8136,168 @@ const ClusterDetails = () => {
           .attr('stroke-width', '0.5')
           .attr('marker-end', 'url(#cluster-edtails-arrow)')
           .attr('fill', 'none');
-    wrapper
+    // 坐标轴标签
+    wrapper.append('text')
+            .attr('x', 0)
+            .attr('y', 1)
+            .style('fill', '#1e1e1e')
+            .style('font-size', '0.7em')
+            .style('text-anchor', 'middle')
+            .text(yAxisType)
+    wrapper.append('text')
+            .attr('x', maxWidth + 25)
+            .attr('y', height/2)
+            .attr('dy', '0.35em')
+            .style('fill', '#1e1e1e')
+            .style('font-size', '0.7em')
+            .style('text-anchor', 'start')
+            .text(xAxisType)
+    const nodeEnter = wrapper
       .append("g")
       .attr("class", "chart-g")
-      .selectAll("circle")
+      .selectAll("g")
       .data(mergeData)
-      .join("circle")
-      .attr("cx", (d) => d.x) // 计算出来的x、y值
-      .attr("cy", (d) => d.y)
-      .attr("xval", (d) => d[xAxisType])
-      .attr("yval", (d) => d[yAxisType])
-      .attr("r", circleR)
-      .attr("fill", (d) => {
-        if (d.group.length !== 0) {
-          return "red";
+      .join("g")
+      .attr("transform", (d) => `translate(${d.x},${d.y})`)
+      .attr("class", "chart-g")
+      .on('click', function(event, d){   // 单击展开节点
+        event.stopPropagation();
+        let curXValToYVal = `${d[xAxisType]}_${d[yAxisType]}`  // 横坐标的值
+        let temp = [...openedP]
+        // if(d.group.length === 0) return // 不处理单个点的点击事件
+        if(temp.indexOf(curXValToYVal) === -1){   // 当前集合中不存在这个元素，则添加新的元素进去
+            setOpenedP(openedP => [...openedP, curXValToYVal])
+        }else{                                          // 当前数组中存在这个元素，则表示要将这个元素组合折叠
+            let tt = temp.filter((d) => d !== curXValToYVal); // 过滤掉被删除的节点
+            setOpenedP([...tt])
         }
-        return "#d6f6a7";
-      });
+      })
+
+    nodeEnter.filter((d) => isSingleNode(d))
+            .append('circle')
+            .attr("cx", 0) // 计算出来的x、y值
+            .attr("cy", 0)
+            .attr("xval", (d) => d[xAxisType])
+            .attr("yval", (d) => d[yAxisType])
+            .attr("stroke", 'yellow')
+            .attr("stroke-width", d => {
+                let curXValToYVal = `${d[xAxisType]}_${d[yAxisType]}`
+                if(openedP.indexOf(curXValToYVal) !== -1){   // 当前集合展开集合中存在这个点所在的组
+                    return '2'
+                }
+                return '0'
+            })
+            .attr("r", circleR)
+            .attr("fill", d => colorScale(d[yAxisType]))
+            .style("cursor", "pointer")
+            .on("mouseover", function(event, d){
+                tooltip.style("left", event.offsetX + 18 + "px")
+                    .style("top", event.offsetY + 18 + "px")
+                    .style("display", "block")
+                    .html(`<strong>${d['reponame']}: </strong><br>${xAxisType}:${d[xAxisType]}<br>${yAxisType}:${d[yAxisType]}`);
+                let curXValToYVal = `${d[xAxisType]}_${d[yAxisType]}`
+                if(openedP.indexOf(curXValToYVal) === -1){   // 当前集合展开集合中不存在这个点所在的组
+                    d3.select(this).attr('stroke-width', '1')
+                }
+              
+            })
+            .on('mouseout', function(event, d){
+                tooltip.style("display", "none"); // Hide toolTip
+                let curXValToYVal = `${d[xAxisType]}_${d[yAxisType]}`
+                if(openedP.indexOf(curXValToYVal) === -1){   // 当前集合展开集合中不存在这个点所在的组
+                    d3.select(this).attr('stroke-width', '0')
+                }
+              
+            })
+    const arc = d3.arc().innerRadius(circleR-2).outerRadius(circleR)
+    nodeEnter.filter((d) => !isSingleNode(d)).each(function(d){
+        let curYVal = d[yAxisType]
+        const arcs = d3.pie()
+                       .padAngle(0.2)
+                       .sort(null)
+                       .value(d => d)(new Array(d.group.length).fill(1))
+        d3.select(this).selectAll('.arcs').data(arcs).join('path').attr('fill', d => innerPieColorScale(curYVal)).attr('d', arc)
+        d3.select(this)
+          .append('circle')
+          .attr("cx", 0) // 计算出来的x、y值
+          .attr("cy", 0)
+          .attr("xval", (d) => d[xAxisType])
+          .attr("yval", (d) => d[yAxisType])
+          .attr("r", circleR - 2.2)
+          .attr("fill", d => colorScale(d[yAxisType]))
+          .style("cursor", "pointer")
+          .on("mouseover", function(event, d){
+            d3.select(this).attr('r', circleR - 2)
+            tooltip.style("left", event.offsetX + 18 + "px")
+            .style("top", event.offsetY + 18 + "px")
+            .style("display", "block")
+            .html(`${xAxisType}:${d[xAxisType]}<br>${yAxisType}:${d[yAxisType]}`);
+          })
+          .on('mouseout', function(event, d){
+            d3.select(this).attr('r', circleR - 2.2)
+            tooltip.style("display", "none"); // Hide toolTip
+          })
+
+        //   .on('dblclick', function(event, d){   // 双击收缩节点
+        //     let curXVal = d[xAxisType]  // 横坐标的值
+        //     setOpenedP([curXVal])
+        //   })
+    
+    })
+
+    function drawLegend(){
+        const legendWrapper = svg.append("g").attr("transform", `translate(${margin.left*2}, ${0})`);
+        const tickSize = 10;
+        const yDataSet = [...new Set(yData)] // 对y轴的点进行去重，处理节点展开之后的情况
+        let legendNodeG = legendWrapper.selectAll('g')
+                     .data(d3.range(0, Math.ceil(yDataSet.length/tickSize)))  // 生成多个矩形表示不同的区间
+                     .join('g')
+                     .attr("transform", (d, i) => `translate(${5 + i*legendW/(tickSize+2)}, ${0})`);
+        legendNodeG.append('rect')
+                    .attr('x', 0)
+                     .attr('y', 0)
+                     .attr('width', legendW/(tickSize+2))
+                     .attr('height', legendH/2)
+                     .attr('fill', (d, i) => {
+                        let curIndex = i*tickSize>= yDataSet.length ? yDataSet.length-1: i*tickSize
+                        return colorScale(yDataSet[curIndex])
+                     })
+                     .on('mouseover', function(event, d){
+                        let startVal = yDataSet[d*tickSize]
+                        let endValue = yDataSet[(d + 1)*tickSize] || yDataSet[yDataSet.length-1]
+                        nodeEnter.filter(d => !(d[yAxisType] >= startVal && d[yAxisType] <= endValue))
+                                .attr('opacity', 0.01)
+                     })
+                     .on('mouseout', function(event, d){
+                        nodeEnter.attr('opacity', 1)
+                     })
+
+        legendNodeG.append('text')
+                    .attr('dx', 0)
+                    .attr('dy', legendH-5)
+                    .attr('text-anchor', 'middle')
+                    .style('font-size', '0.5em')
+                    .text(d => {
+                        if(d* tickSize >= yDataSet.length){
+                            return yDataSet[d*tickSize]
+                        }
+                        return yDataSet[d*tickSize]
+                    })
+    }
+    
   };
 
   // 对排序后的数据根据y轴的值进行合并(合并同一个x下相同y值的点)
-  function mergeDataFunc(w, h, r, yAvg) {
+  function mergeDataFunc(data, h, r, yAvg, interval) {
     let mergeData = [{ ...data[0], group: [], x: r, y: h / 2 - r }]; // 把第一条数据放进去并初始化类型为单个点，第一个点的位置位于初始位置
     let mergeIndex = 1;
-    let colMaxNumber = Math.floor(h / (2 * 2 * r)); // 一半视图最多能容纳的点数
+    let colMaxNumber = Math.floor((h - interval) / (2 * 2 * r)); // 一半视图最多能容纳的点数
     let xLabel = {};
+    // 对排序后的数据根据y轴的值进行合并(合并同一个x下相同y值的点)（不包含在openedP中的店）
     for (let i = 1; i < data.length; i++) {
       let temp = data[i];
-      // 当前点与merge中的最后一条数据相同
-      if (
-        temp[xAxisType] === mergeData[mergeIndex - 1][xAxisType] &&
-        temp[yAxisType] === mergeData[mergeIndex - 1][yAxisType]
-      ) {
+      // 当前点与merge中的最后一条数据相同，不在展开数组中的顶点被合并
+      if (openedP.indexOf(`${temp[xAxisType]}_${temp[yAxisType]}`) === -1 && temp[xAxisType] === mergeData[mergeIndex - 1][xAxisType] && temp[yAxisType] === mergeData[mergeIndex - 1][yAxisType]) {
         if (mergeData[mergeIndex - 1]["group"].length === 0) {
           delete mergeData[mergeIndex - 1].group;
           mergeData[mergeIndex - 1] = {
@@ -8169,7 +8319,7 @@ const ClusterDetails = () => {
     }
 
     // 计算合并后的数据的x, y
-    // xLabel={'x1': [number(y>avg), number(y<avg)], 'x2':[...]}
+    // xLabel={'score1': [number(y>=avg), number(y<avg), number(prevNeedColumn), number(cur rect width)], 'score2':[...]}
     for (let i of mergeData) {
       if (xLabel.hasOwnProperty(i[xAxisType])) {
         if (i[yAxisType] >= yAvg) {
@@ -8186,14 +8336,17 @@ const ClusterDetails = () => {
         }
       }
     }
-    console.log(h / (2 * 2 * r), colMaxNumber, xLabel);
+    // console.log(h / (2 * 2 * r), colMaxNumber, xLabel);
     let maxWidth = 0;  // 记录图表实际使用的宽度
     let columnIndex = 0; // 标识属于第几列的，是累加的
     let prevNeededCol = 0;
     let positiveNumber = 0; // 某一个key下面的负数总数
     let negativeNumber = 0; // 某一个key下面的正数总数
     let prevKey = -1;
+    let xRectLabel = new Array(xLabel.length), xRectIndex = 0;
+
     for (let i = 0; i < mergeData.length; i++) {
+        let curKey = mergeData[i][xAxisType]; // 当前key
       if (i === 0) {
         // 第一个元素
         columnIndex = 1;
@@ -8201,11 +8354,13 @@ const ClusterDetails = () => {
         negativeNumber = 0;
         prevKey = mergeData[i][xAxisType];
         prevNeededCol = Math.ceil(
-          d3.max(xLabel[mergeData[i][xAxisType]]) / colMaxNumber
+          d3.max([xLabel[mergeData[i][xAxisType]][0], xLabel[mergeData[i][xAxisType]][1]]) / colMaxNumber
         ); // 当前的横坐标值需要的列数
+        xRectLabel[0] = []
+        xRectLabel[0].push(0)  // 第一个起点是0
+        xRectLabel[0].push(prevNeededCol)  // 第一个需要的宽度
       }
 
-      let curKey = mergeData[i][xAxisType]; // 当前key
       if (curKey === prevKey) {
         if (mergeData[i][yAxisType] >= yAvg) {
           positiveNumber += 1;
@@ -8213,11 +8368,15 @@ const ClusterDetails = () => {
           negativeNumber += 1;
         }
       } else {
+        xRectIndex += 1
         columnIndex += prevNeededCol; // 已经使用了的列数
         // 重新初始化一些参数
         prevNeededCol = Math.ceil(
-          d3.max(xLabel[mergeData[i][xAxisType]]) / colMaxNumber
+          d3.max([xLabel[mergeData[i][xAxisType]][0], xLabel[mergeData[i][xAxisType]][1]]) / colMaxNumber
         ); // 当前的横坐标值需要的列数
+        xRectLabel[xRectIndex] = []
+        xRectLabel[xRectIndex].push(columnIndex - 1) 
+        xRectLabel[xRectIndex].push(prevNeededCol)  
         positiveNumber = 0;
         negativeNumber = 0;
         prevKey = curKey;
@@ -8229,33 +8388,39 @@ const ClusterDetails = () => {
         }
       }
 
-      let c = 0, row = 0;
+      let c = 0, row = 0, XvalIndex;
       if (mergeData[i][yAxisType] >= yAvg) {
+        XvalIndex = 0
         if(positiveNumber % (colMaxNumber) === 0){
           c = colMaxNumber
         }else{
           c= positiveNumber % (colMaxNumber)
         }
-        mergeData[i]["y"] = h / 2 - r * (2 *c - 1); // 当前点的y值
+        mergeData[i]["y"] = h / 2 - r * (2 *c - 1) - interval/2; // 当前点的y值，上方的点整体向上移动一格
       } else {
+        XvalIndex = 1
         if(negativeNumber % (colMaxNumber) === 0){
           c = colMaxNumber
         }else{
           c= negativeNumber % (colMaxNumber)
         }
-        mergeData[i]["y"] = h / 2 + r * (2 * c - 1); // 当前点的y值
+        mergeData[i]["y"] = h / 2 + r * (2 * c - 1) + interval/2; // 当前点的y值，下方的点整体向下移动一格
       }
-      if(d3.max([positiveNumber, negativeNumber]) %  (colMaxNumber) === 0){
-        row = d3.max([positiveNumber, negativeNumber]) / (colMaxNumber) - 1
+    // 点的x值
+      let t = [positiveNumber, negativeNumber]
+      if(t[XvalIndex] %  (colMaxNumber) === 0){
+        row = t[XvalIndex] / (colMaxNumber) - 1
       }else{
-        row = Math.floor(d3.max([positiveNumber, negativeNumber]) /  (colMaxNumber))
+        row = Math.floor(t[XvalIndex] /  (colMaxNumber))
       }
       mergeData[i]["x"] = r *((columnIndex + row) * 2 - 1); // 当前点的x值
+
       if(i === mergeData.length -1){
         maxWidth = mergeData[i]["x"]
       }
     }
-    return [mergeData, maxWidth];
+    console.log(xRectLabel)
+    return [mergeData, maxWidth, xRectLabel];
   }
 
   // 现根据x轴属性升序排序，再根据y轴属性升序排序
@@ -8274,19 +8439,31 @@ const ClusterDetails = () => {
   // 计算y轴的平均值
   function average(array) {
     let sum = 0;
-    array.forEach((e) => {
-      sum += e[yAxisType];
-    });
-    return sum / array.length;
+    if(yAxisType === 'star' || yAxisType === 'score'){
+        array.forEach((e) => {
+            sum += e[yAxisType];
+          });
+        return Math.round((sum / array.length)*100)/100;
+    }
   }
+
+  // 判断当前节点是否是单个节点
+  function isSingleNode(d) {
+    return d.group.length === 0;
+  }
+
+
 
   return (
     <>
       <div
-        id="cluster-details"
+        id="cluster-details-container"
         style={{ width: "100%", height: "100%" }}
-        ref={chartRef}
-      ></div>
+      >
+        <div id="cluster-details" 
+            ref={chartRef}
+            style={{ width: "3000px", height: "100%" }}></div>
+      </div>
     </>
   );
 };
