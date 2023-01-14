@@ -8219,7 +8219,8 @@ const ClusterDetails = () => {
             .attr("fill", d => colorScale(d[yAxisType]))
             .style("cursor", "pointer")
             .on("mouseover", function(event, d){
-                tooltip.style("left", event.offsetX + 18 + "px")
+                console.log(event)
+                tooltip.style("left", event.layerX + 18 + "px")
                     .style("top", event.offsetY + 18 + "px")
                     .style("display", "block")
                     .html(`<strong>${d['reponame']}: </strong><br>${xAxisType}:${d[xAxisType]}<br>${yAxisType}:${d[yAxisType]}`);
@@ -8230,7 +8231,7 @@ const ClusterDetails = () => {
               
             })
             .on('mouseout', function(event, d){
-                tooltip.style("display", "none"); // Hide toolTip
+                // tooltip.style("display", "none"); // Hide toolTip
                 let curXValToYVal = `${d[xAxisType]}_${d[yAxisType]}`
                 if(openedP.indexOf(curXValToYVal) === -1){   // 当前集合展开集合中不存在这个点所在的组
                     d3.select(this).attr('stroke-width', '0')
@@ -8520,9 +8521,13 @@ const ClusterDetails = () => {
                 </Radio.Group>
             </div>
         </div>
-        <div id="cluster-details" 
-            ref={chartRef}
-            style={{ width: "3000px", height: "90%" }}></div>
+        <div id="cluster-details-chart" style={{ width: "100%", height: "90%" }}>
+          <div id="cluster-details" 
+              ref={chartRef}
+              style={{ width: "3000px", height: "100%" }}>
+          </div>
+        </div>
+
       </div>
     </>
   );
