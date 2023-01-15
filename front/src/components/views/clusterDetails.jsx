@@ -8231,7 +8231,7 @@ const ClusterDetails = () => {
               
             })
             .on('mouseout', function(event, d){
-                // tooltip.style("display", "none"); // Hide toolTip
+                tooltip.style("display", "none"); // Hide toolTip
                 let curXValToYVal = `${d[xAxisType]}_${d[yAxisType]}`
                 if(openedP.indexOf(curXValToYVal) === -1){   // 当前集合展开集合中不存在这个点所在的组
                     d3.select(this).attr('stroke-width', '0')
