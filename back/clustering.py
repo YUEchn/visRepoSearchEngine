@@ -1,96 +1,123 @@
+# -*- coding: utf-8 -*-
+import json
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.cluster import KMeans
+from sklearn import metrics
+from sklearn.decomposition import PCA, KernelPCA
+from scipy.spatial.distance import cdist  # 计算距离
+
+corpus_path = 'E:/2-GS_py/merge keywords/all50-stem.json'
 
 
-"""
-基于 sentence embeddings的聚类：kmeans
-不足：需要指定聚类的个数
+class KmeansClustering:
+    def __init__(self, stopwords_path=None):
+        self.stopwords = self.load_stopwords(stopwords_path)
+        self.vectorizer = CountVectorizer()
+        self.transformer = TfidfTransformer()
+        self.cluster_dict = {}
 
-:params resp_repos: 从数据库中查询的到的结果
-:return 
-"""
-def kmeans(resp_repos):
-    from sentence_transformers import SentenceTransformer
-    from sklearn.cluster import KMeans
-    
-    descriptions_corpus = []
-    for repo in resp_repos:
-        if repo['_source']['description'] is None:
-            descriptions_corpus.append('')
+    def load_stopwords(self, stopwords=None):
+        """
+        加载停用词
+        :param stopwords:
+        :return:
+        """
+        if stopwords:
+            with open(stopwords, 'r', encoding='utf-8') as f:
+                return [line.strip() for line in f]
         else:
-            descriptions_corpus.append(repo['_source']['description'])
+            return []
 
-    embedder = SentenceTransformer('all-MiniLM-L6-v2')
+    def preprocess_data(self, corpus_path):
+        """
+        文本预处理，每行一个文本
+        :param corpus_path:
+        :return:
+        """
+        corpus = []
+        numberRes = {}
+        index = 0
+        for item in corpus_path:
+            temp = ""
+            # for word in item['groupTopics']:
+            for word in item['topics']:
+                temp += word
+                temp += ' '
+            corpus.append(temp)
 
-    # Corpus with example sentences
-    corpus = ['A man is eating food.',
-            'A man is eating a piece of bread.',
-            'A man is eating pasta.',
-            'The girl is carrying a baby.',
-            'The baby is carried by the woman',
-            'A man is riding a horse.',
-            'A man is riding a white horse on an enclosed ground.',
-            'A monkey is playing drums.',
-            'Someone in a gorilla costume is playing a set of drums.',
-            'A cheetah is running behind its prey.',
-            'A cheetah chases prey on across a field.'
-            ]
+        # with open(corpus_path, 'r', encoding='utf-8') as f:
+        #     data = json.load(f)
+        #     for item in data:
+        #         temp = ''
+        #         for word in data[item]:
+        #             temp += word
+        #             temp += ' '
+        #         corpus.append(temp)
+        #         # numberRes[index] =temp
+        #         # index += 1
 
-    corpus_embeddings = embedder.encode(descriptions_corpus)
+        return corpus
 
-    # Perform kmean clustering
-    num_clusters = 5
-    clustering_model = KMeans(n_clusters=num_clusters)
-    clustering_model.fit(corpus_embeddings)
-    cluster_assignment = clustering_model.labels_
+    def get_text_tfidf_matrix(self, corpus):
+        """
+        获取tfidf矩阵
+        :param corpus:
+        :return:
+        """
+        # print(corpus)
+        tfidf = self.transformer.fit_transform(self.vectorizer.fit_transform(corpus))
 
-    clustered_sentences = [[] for i in range(num_clusters)]
-    for sentence_id, cluster_id in enumerate(cluster_assignment):
-        clustered_sentences[cluster_id].append(corpus[sentence_id])
+        # 获取词袋中所有词语
+        # words = self.vectorizer.get_feature_names()
 
-    for i, cluster in enumerate(clustered_sentences):
-        print("Cluster ", i+1)
-        print(cluster)
-        print("")
+        # 获取tfidf矩阵中权重
+        weights = tfidf.toarray()
+        return weights
 
-def fastclustring(resp_repos):
-    from sentence_transformers import SentenceTransformer, util
-    import os
-    import csv
-    import time
+    def pca(self, weights, n_components=2):
+        """
+        PCA对数据进行降维
+        :param weights:
+        :param n_components:
+        :return:
+        """
+        pca = PCA(n_components=n_components)
+        # pca = KernelPCA(kernel="rbf",n_components=n_components)
+        return pca.fit_transform(weights)
 
-    model = SentenceTransformer('all-MiniLM-L6-v2')
+    def kmeans(self, corpus_path, group_index, match_group, n_clusters=15):
+        """
+        KMeans文本聚类
+        :param corpus_path: 待聚类的数据, [{}], {}, {}, {}]
+        :param n_clusters: ：聚类类别数目
+        :return: {cluster_id1:[{text_id1}, {text_id2}]}
+        """
+        corpus = self.preprocess_data(corpus_path)
+        weights = self.get_text_tfidf_matrix(corpus)
+        pca_weights = self.pca(weights)
+        clf = KMeans(n_clusters=n_clusters)
 
-    descriptions_corpus = []
-    for repo in resp_repos:
-        if repo['_source']['description'] is None:
-            descriptions_corpus.append('')
-        else:
-            descriptions_corpus.append(repo['_source']['description'])
+        # clf.fit(weights)
+        y = clf.fit_predict(pca_weights)
+        # 中心点
+        # centers = clf.cluster_centers_
 
-    print("Encode the corpus. This might take a while")
-    corpus_embeddings = model.encode(descriptions_corpus, batch_size=64, show_progress_bar=True, convert_to_tensor=True)
-    print(descriptions_corpus)
+        # 用来评估簇的个数是否合适,距离约小说明簇分得越好,选取临界点的簇的个数
+        # score = clf.inertia_
 
-    print("Start clustering")
-    start_time = time.time()
+        # 每个样本所属的簇, 将分类的信息添加到原始数据中
+        result = {}
+        for text_idx, label_idx in enumerate(y):
+            temp = corpus_path[text_idx]
+            temp['id'] = 'c_' + str(group_index) + '_' + str(label_idx)
 
-    #Two parameters to tune:
-    #min_cluster_size: Only consider cluster that have at least 25 elements
-    #threshold: Consider sentence pairs with a cosine-similarity larger than threshold as similar
-    clusters = util.community_detection(corpus_embeddings, min_community_size=5, threshold=0.5)
+            if label_idx not in result:
+                result['c_' + str(group_index) + '_' + str(label_idx)] = [temp]
+            else:
+                result['c_' + str(group_index) + '_' + str(label_idx)].append(temp)
 
-    print("Clustering done after {:.2f} sec".format(time.time() - start_time))
-
-    #Print for all clusters the top 3 and bottom 3 elements
-    for i, cluster in enumerate(clusters):
-        print("\nCluster {}, #{} Elements ".format(i+1, len(cluster)))
-        for sentence_id in cluster[0:3]:
-            print("\t", descriptions_corpus[sentence_id])
-        print("\t", "...")
-        for sentence_id in cluster[-3:]:
-            print("\t", descriptions_corpus[sentence_id])
-
-
-
-if __name__ == '__main__':
-    # kmeans([])
-    fastclustring([])
+        res = []
+        for key, value in result.items():
+            res.append({'id': key, 'content': match_group, 'children': value})
+        return res
