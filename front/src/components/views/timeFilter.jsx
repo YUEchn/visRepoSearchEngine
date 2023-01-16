@@ -433,9 +433,17 @@ const disabledDate = (current) => {
 
   return (
     <>
+    <style>
+      {`
+        #time-filter-antd{
+          padding-top: 0.7vh;
+        }
+      `}
+    </style>
       <div id="time-filter-antd" style={{ width: "15%", height: "100%" }}>
         <RangePicker
           picker="month"
+          size="small"
           value={value}
           disabledDate={disabledDate}
           onChange={(val) => {
