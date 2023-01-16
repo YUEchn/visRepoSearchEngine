@@ -276,13 +276,13 @@ def search(query, mode='match'):
                     match_group[match_pattern_str] = []
                 match_group[match_pattern_str].append(content)
 
-            # 对匹配结果进行聚类
+    # 对匹配结果进行聚类
     final_res = clusteringGroup(match_group, maxLength)
 
     # 根据score对数据进行排序，优先级：得分降序、名称字母升序
     respond_sorted = sorted(respond, key=lambda x: (-x['score'], x['repoName']))  # 列表的数据
     # app.logger.info(respond)
-    return {"listData": respond_sorted, 'clusterData': res}
+    return {"listData": respond_sorted, 'clusterData': final_res}
 
 
 def setup_log():
