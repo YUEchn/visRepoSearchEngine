@@ -5,6 +5,7 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.cluster import KMeans
 from sklearn import metrics
 from sklearn.decomposition import PCA, KernelPCA
+from nltk.stem import porter
 from scipy.spatial.distance import cdist  # 计算距离
 
 corpus_path = 'E:/2-GS_py/merge keywords/all50-stem.json'
@@ -37,13 +38,18 @@ class KmeansClustering:
         """
         corpus = []
         numberRes = {}
+        PS = porter.PorterStemmer()  # 对关键词进行词根化
         index = 0
         for item in corpus_path:
             temp = ""
-            # for word in item['groupTopics']:
+            temp_arr = []
+            # for word in item['mergeTopics']:
             for word in item['topics']:
-                temp += word
-                temp += ' '
+                word_stem = PS.stem(word)
+                if word_stem not in temp_arr:
+                    temp += word_stem
+                    temp += ' '
+                temp_arr.append(word_stem)
             corpus.append(temp)
 
         # with open(corpus_path, 'r', encoding='utf-8') as f:
