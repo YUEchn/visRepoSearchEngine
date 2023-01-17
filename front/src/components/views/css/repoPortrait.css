@@ -1,0 +1,28 @@
+#repo-info{
+    width: 100%;
+    height: 70%;
+}
+
+#connected-repo{
+    width: 100%;
+    height: 30%;
+    display: flex;
+}
+
+#related-repo{
+    width: 50%;
+    height: 100%;
+    background-color: antiquewhite;
+}
+#similar-repo{
+    width: 50%;
+    height: 100%;
+    background-color: beige;
+}
+
+.connected-repo-title{
+    color: 'black';
+    height: 10%;
+    width: 100%;
+    background-color: '#ddd';
+}
