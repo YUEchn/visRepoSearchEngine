@@ -16,7 +16,7 @@ const { Search } = Input;
 
 const Main = () => {
   const [init, setInit] = useState(false);
-  const [query, setQuery] = useState("11");
+  const [query, setQuery] = useState("");
   const [result, setResult] = useState([]);
   const [loading, setLoading] = useState(false);
   // const [isSelect, setIsSelect] = useState(false)
@@ -117,9 +117,11 @@ const Main = () => {
     let flexObj = document.getElementsByClassName("flexlayout__layout");
     if (init && flexObj !== undefined) {
       if (query !== "") {
+        flexObj[0].style.width = '55vw'
         flexObj[0].style.left = "20vw"; // 根据是否有查询更新页面布局
         setSelectRepo("aaaa");
       } else {
+        flexObj[0].style.width = '75vw'
         flexObj[0].style.left = "0";
         setMaximize("width");
       }
@@ -150,14 +152,14 @@ const Main = () => {
     <div id="main-container">
       <div id="header">
         <div id="engine-logo">
-          <img src="./assets/img/logo.svg" className="App-logo"></img>
+          <h1>VisRepo</h1>
         </div>
         <div id="search-container">
           <div id="search-interface">
             <Search
               placeholder="input search text"
               enterButton="Search"
-              size="large"
+              size="midlle"
               onSearch={searchRepo}
             />
           </div>
@@ -187,22 +189,9 @@ const Main = () => {
             restore: <>&#128469;&#xFE0E;</>,
           }}
         />
-        {selectRepo && (
-          <>
-            <div id="close-button-div">
-              <button
-                id="close-repo-portrait"
-                aria-label="Close"
-                onClick={() => {
-                  setSelectRepo("");
-                }}
-              ></button>
-            </div>
-            <div id="repo-portrait">
-              <RepoPortrait></RepoPortrait>
-            </div>
-          </>
-        )}
+      </div>
+      <div id="repo-portrait">
+        <RepoPortrait></RepoPortrait>
       </div>
     </div>
   );

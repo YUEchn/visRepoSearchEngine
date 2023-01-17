@@ -251,7 +251,7 @@ const ClusterTopics = ({ clusterHovering }) => {
   return (
     <div
       id="cluster-topics"
-      style={{ width: "20%", height: "100%", float: "left" }}
+      style={{ width: "10%", height: "100%", float: "left" }}
     >
       <div
         id="cluster-topics-flow"

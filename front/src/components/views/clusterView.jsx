@@ -1336,7 +1336,7 @@ const ClusterView = () => {
     <>
       <div
         id="cluster-map"
-        style={{ width: "80%", height: "100%", float: "left" }}
+        style={{ width: "90%", height: "100%", float: "left" }}
         ref={resizeRef}
       ></div>
 
