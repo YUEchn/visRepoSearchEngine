@@ -1,24 +1,29 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Tabs } from 'antd';
+import { Tabs, Tag } from 'antd';
 import ReactPrismjs from '@uiw/react-prismjs';
+import parse from "html-react-parser";
 import 'prismjs/components/prism-javascript';
 import './css/repoPortrait.css'
-
+import * as echarts from 'echarts'
 
 const RepoPortrait = () =>{
     const [init, setInit] = useState(false)
     const [data, setData] = useState({})
+    const languageRef = useRef()
 
     useEffect(() => {
         setData(origin_data)
     }, [])
 
     useEffect(() => {
+        if(data !== {}){
+            languageChart()
+        }
 
     }, [data])
 
     const origin_data = {
-        "expressjs/express": {
+            "repoName": 'express',
             "owner": "5658226_expressjs",
             "owner_html_url": "https://github.com/expressjs",
             "owner_type": "Organization",
@@ -27,7 +32,7 @@ const RepoPortrait = () =>{
             "created_at": "2009-06-26T18:56:01Z",
             "updated_at": "2022-07-29T07:39:47Z",
             "size": 9099,
-            "topics": ["express", "javascript", "nodejs", "server"],
+            "topics": ["express", "javascript", "nodejs", "server", "ess", "javascript", "nodejs", "server", "express", "javascript", "nodejs", "server"],
             "stargazers_count": 57786,
             "watchers_count": 57786,
             "contents_url": "https://api.github.com/repos/expressjs/express/contents/{+path}",
@@ -44,8 +49,167 @@ const RepoPortrait = () =>{
               "fast",
               "hyperlink",
               "node"
-            ]
+            ],
+            "highlight":{
+                "topics": [
+                    "<em>express</em>-<em>nodejs</em>",
+                    "messy-<em>data</em>"
+                ],
+                "description": [
+                    "<em>Fast</em> unopinionated, <em>visualization</em> of big messy <em>data</em> origin_data. highlight. property test data."
+                ]
           }
+    }
+    function languageChart(){
+        let myChart = echarts.init(languageRef.current)
+        let barData = Object.keys(origin_data.language).sort(function(a,b){ return origin_data.language[b]-origin_data.language[a];})   // 根据数量多少对数据进行排序
+
+        let barWidth = 3 /* 进度条及进度条radius宽度 */,
+        nameWidth = 60 /* 进度条名称宽度 */,
+        attaData = [] /* 进度条数据 */,
+        attaVal = [] /* 进度条数值 */,
+        topName = [] /* 进度条名称 */,
+        salvProMax = []; /* 背景条数据 */
+        let attackSourcesColor = [
+            new echarts.graphic.LinearGradient(0, 1, 1, 1, [
+                { offset: 0, color: '#FE9C5A' },
+                { offset: 1, color: '#EB3B5A' },
+            ]),
+            new echarts.graphic.LinearGradient(0, 1, 1, 1, [
+                { offset: 0, color: '#FFD14C' },
+                { offset: 1, color: '#FA8231' },
+            ]),
+            new echarts.graphic.LinearGradient(0, 1, 1, 1, [
+                { offset: 0, color: '#FFEE96' },
+                { offset: 1, color: '#F7B731' },
+            ]),
+            new echarts.graphic.LinearGradient(0, 1, 1, 1, [
+                { offset: 0, color: '#2EC7CF' },
+                { offset: 1, color: '#395CFE' },
+            ]),
+        ];
+        let index = 0
+        for(let key in barData){
+            let itemStyle = {
+                color: index > 3 ? attackSourcesColor[3] : attackSourcesColor[index],
+            };
+            topName[index] = barData[key];
+            attaVal[index] = origin_data.language[barData[key]];
+            attaData[index] = {
+                value: origin_data.language[barData[key]],
+                itemStyle: itemStyle,
+            };
+            index += 1
+        }
+
+        /* 该值无具体作用，取进度最大值 * 1.2 */
+        salvProMax = Array(attaVal.length).fill(Math.max(...attaVal) * 1.2);
+        let option = {
+            backgroundColor: 'transparent',
+            tooltip: {
+                show: true,
+                backgroundColor: 'rgba(1,1,1, 0.1)', //背景颜色（此时为默认色）
+                textStyle: {
+                    fontSize: 10,
+                },
+            },
+            grid: {
+                left: '2%',
+                right: '2%',
+                top: '2%',
+                bottom: '2%',
+                containLabel: true,
+            },
+            legend: {
+                show: false,
+            },
+            xAxis: {
+                show: false,
+            },
+            yAxis: [
+                {
+                    //名称
+                    type: 'category',
+                    inverse: true,
+                    axisTick: 'none',
+                    axisLine: 'none',
+                    show: true,
+                    axisLabel: {
+                        textStyle: {
+                            color: '#1F4265',
+                        },
+                        formatter: (val, i) => {
+                            return `{name|${val}}`;
+                        },
+                        rich: {
+                            name: {
+                                width: nameWidth,
+                                fontSize: 8,
+                                fontWeight: 600,
+                            },
+                        },
+                    },
+                    data: topName,
+                },
+                {
+                    type: 'category',
+                    inverse: true,
+                    axisTick: 'none',
+                    axisLine: 'none',
+                    show: true,
+                    axisLabel: {
+                        textStyle: {
+                            color: '#1F4265',
+                            fontSize: 8,
+                        },
+                        formatter: (val) => {
+                            return val;
+                        },
+                    },
+                    data: attaVal,
+                },
+            ],
+            series: [
+                {
+                    zlevel: 1,
+                    name: '',
+                    type: 'bar',
+                    barWidth: barWidth,
+                    animationDuration: 1500,
+                    data: attaData,
+                    align: 'center',
+                    itemStyle: {
+                        normal: {
+                            barBorderRadius: barWidth,
+                        },
+                    },
+                    label: {
+                        show: false,
+                    },
+                },
+                // 背景条
+                {
+                    name: '',
+                    type: 'bar',
+                    barWidth: barWidth,
+                    barGap: '-100%',
+                    data: salvProMax,
+                    itemStyle: {
+                        normal: {
+                            barBorderRadius: barWidth,
+                            color: 'rgba(165, 213, 232, 1)',
+                        },
+                        emphasis: {
+                            color: 'rgba(165, 213, 232, 1)',
+                        },
+                    },
+                },
+            ],
+        };
+        
+        
+        
+          myChart.setOption(option)
     }
 
 
@@ -60,7 +224,28 @@ const RepoPortrait = () =>{
     return(
         <>
             <div id="repo-info">
-
+                <div id="repo-info-title"><a href={origin_data.html_url}  target="_blank"><h2> {origin_data.repoName} </h2></a></div>
+                <div id="repo-info-description">{origin_data.highlight.hasOwnProperty("description")?parse(origin_data.highlight.description[0].replaceAll("<em>", "<b>").replaceAll("</em>", "</b>")): origin_data.description}</div>
+                <div id="repo-info-labels">
+                    <div id="repo-info-tags">
+                        {
+                            origin_data.topics.map((topic) => {
+                                return (
+                                    <Tag
+                                    value={topic.replace(/\-|\_/g, " ").toLowerCase()}
+                                    >
+                                    {topic}
+                                    </Tag>
+                                )
+                            })
+                        }
+                    </div>
+                    <div id="repo-info-language" ref={languageRef}></div>
+                </div>
+                <hr />
+                <div id="repo-info-source-container">
+                    <div id="repo-info-source"></div>
+                </div>
             </div>
             <div id="connected-repo">
                 <Tabs
@@ -80,12 +265,6 @@ const RepoPortrait = () =>{
                     };
                     })}
                 />
-                {/* <div id="related-repo">
-                    <div className="connected-repo-title">related repository</div>
-                </div>
-                <div id="similar-repo">
-                    <div className="connected-repo-title">similar repository</div>
-                </div> */}
             </div>
         </>
     )

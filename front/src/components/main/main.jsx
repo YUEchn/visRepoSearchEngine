@@ -96,8 +96,8 @@ const Main = () => {
             // setSelectRepo={setSelectRepo}
           />
         );
-      case "cluster-view":
-        return <ClusterView />;
+      // case "cluster-view":
+      //   return <ClusterView />;
       case "cluster-details":
         return <ClusterDetails />;
       case "relevant-repos":
